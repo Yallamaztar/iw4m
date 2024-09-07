@@ -31,7 +31,7 @@ print(response.text)
 response = commands.change_map("<map>")
 print(response.text)
 
-response = commands.ban("<player>, "<reason>"):
+response = commands.ban("<player>", "<reason>"):
 print(response.text)
 
 response = commands.tempban("<player>", "<duration>", "<reason>")
