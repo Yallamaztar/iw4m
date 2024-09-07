@@ -7,7 +7,7 @@
 create an instance of the `IW4MWrapper` class by providing your cookie, server address, and server ID
 
 ```python
-from iw4m_wrapper import IW4MWrapper
+from iw4m import IW4MWrapper
 
 # Initialize the IW4MWrapper
 iw4m = IW4MWrapper(
