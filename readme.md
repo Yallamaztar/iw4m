@@ -40,4 +40,4 @@ print(response.text)
 - Events & Features: Brownies is constantly running unique events and offers more server-side customization options than Orion, ensuring every game feels fresh.
 
 ---
-#### [Brownies Discord](https://discord.gg/FAHB3mwrVF) | [Brownies IW4M](http://141.11.196.83:1624/)
+#### [Brownies Discord](https://discord.gg/FAHB3mwrVF) | [Brownies IW4M](http://141.11.196.83:1624/) | Made With ❤️ By Budiworld
