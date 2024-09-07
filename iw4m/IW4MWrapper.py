@@ -224,10 +224,3 @@ class IW4MWrapper():
                 return self.wrapper.send_command("!x")
             else:
                 return self.wrapper.send_command(f"!x {player}")
-
-iw4m = IW4MWrapper(
-    server_address="http://your.server.com", 
-    server_id=123456789,
-    cookie="your-aspnet-cookie"
-)
-
