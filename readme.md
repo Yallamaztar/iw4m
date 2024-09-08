@@ -15,7 +15,8 @@ iw4m = IW4MWrapper(
     server_address="http://your.server.address",
     server_id=1234567890,
     cookie="your_cookie_here"
-)
+    _logging=True # Set True or False, 
+)                 # you can also read logs with function `get_logs()`
 ```
 
 ## Commands
@@ -54,8 +55,8 @@ iw4m = AsyncIW4MWrapper(
     base_url="http://your.server.address",
     server_id=1234567890,
     cookie="your_cookie_here",
-    _logging=True
-)
+    _logging=True # Set True or False, 
+)                 # you can also read logs with function `get_logs()`
 ```
 
 ## Commands
