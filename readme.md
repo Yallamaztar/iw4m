@@ -15,6 +15,7 @@ iw4m = IW4MWrapper(
     server_address="http://your.server.address",
     server_id=1234567890,
     cookie="your_cookie_here"
+    _logging=True
 )
 ```
 
