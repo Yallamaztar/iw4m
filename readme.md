@@ -30,7 +30,13 @@ response = commands.kick("<player>")
 print(response)
 
 response = commands.change_map("<map>")
-print(response.text)
+print(response)
+
+response = commands.ban("<player>", "<reason>"):
+print(response)
+
+response = commands.tempban("<player>", "<duration>", "<reason>")
+print(response)
 ```
 <div style="padding-top:1rem"></div>
 <div style="height: 0.1rem;">
