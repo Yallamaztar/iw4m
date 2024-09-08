@@ -17,7 +17,7 @@ logging.basicConfig(
 )
 
 class IW4MWrapper():
-    def __init__(self, base_url: str, server_id: int, cookie: str, _logging: bool):
+    def __init__(self, base_url: str, server_id: int, cookie: str, _logging: bool) -> None:
         self.base_url = base_url
         self.server_id = server_id
         self.session = sessions.Session()
@@ -27,7 +27,7 @@ class IW4MWrapper():
         if self._logging:
             logging.info(f"Initialized IW4MWrapper for server {self.base_url} with ID {self.server_id}")
 
-    def send_command(self, command):
+    def send_command(self, command: str) -> str:
         if self._logging:
             logging.info(f"Sending command '{command}' to server {self.base_url} with ID {self.server_id}")
             
@@ -43,9 +43,9 @@ class IW4MWrapper():
                 logging.error(f"Error executing command '{command}': {e}")
             raise
 
-    def get_logs(self):
+    def get_logs(self) -> str:
         temp_dir = tempfile.gettempdir()
-        logs = [file for file in os.listdir(temp_dir) if file.endswith(".log")]
+        logs = [file for file in os.listdir(temp_dir) if file.startswith("IW4MWrapper.py") and file.endswith(".log")]
 
         if not logs:
             logging.exception("No log files found")
@@ -60,21 +60,30 @@ class IW4MWrapper():
             logging.error(f"Error reading log file: {e}")  
             return f"Error reading log file: {e}"   
 
+    def color_handler(self, color) -> str:
+        color.lower()
+        colors = {
+            "black": "^0", "red": "^1", "green": "^2", 
+            "yellow": "^3","dblue": "^4","lblue": "^5", "pink": 
+            "^6", "white": "^7", "gray": "^8", "brown": "^9"
+        }
+        return colors.get(color, "")
+    
     class Commands:
-        def __init__(self, wrapper):
+        def __init__(self, wrapper) -> None:
             self.wrapper = wrapper
 
         #  Command List   #
-        def setlevel(self, player, level):
+        def setlevel(self, player: str, level: str):
             return self.wrapper.send_command(f"!setlevel {player} {level}")
 
-        def change_map(self, map_name):
+        def change_map(self, map_name: str):
             return self.wrapper.send_command(f"!map {map_name}")
         
-        def ban(self, player, reason):
+        def ban(self, player: str, reason: str):
             return self.wrapper.send_command(f"!ban {player} {reason}")
             
-        def unban(self, player, reason):
+        def unban(self, player: str, reason: str):
             return self.wrapper.send_command(f"!unban {player} {reason}")
 
         def fastrestart(self):
@@ -89,22 +98,22 @@ class IW4MWrapper():
         def clearallreports(self):
             return self.wrapper.send_command("!clearallreports")
         
-        def alias(self, player):
+        def alias(self, player: str):
             return self.wrapper.send_command(f"!alias {player}")
 
         def whoami(self):
             return self.wrapper.send_command("!whoami")
         
-        def warn(self, player, reason):
+        def warn(self, player: str, reason: str):
             return self.wrapper.send_command(f"!warn {player} {reason}")
 
-        def warnclear(self, player):
+        def warnclear(self, player: str):
             return self.wrapper.send_command(f"!warnclear {player}")
 
-        def kick(self, player):
+        def kick(self, player: str):
             return self.wrapper.send_command(f"!kick {player}")
 
-        def tempban(self, player, duration, reason):
+        def tempban(self, player: str, duration: str, reason: str):
             return self.wrapper.send_command(f"!tempban {player} {duration} {reason}")
 
         def usage(self):
@@ -113,19 +122,19 @@ class IW4MWrapper():
         def uptime(self):
             return self.wrapper.send_command("!uptime")
         
-        def flag(self, player, reason):
+        def flag(self, player: str, reason: str):
             return self.wrapper.send_command(f"!flag {player} {reason}")
         
-        def unflag(self, player, reason):
+        def unflag(self, player: str, reason: str):
             return self.wrapper.send_command(f"!unflag {player} {reason}")
 
         def mask(self):
             return self.wrapper.send_command("!mask")
         
-        def baninfo(self, player):
+        def baninfo(self, player: str):
             return self.wrapper.send_command(f"!baninfo {player}")
 
-        def setpassword(self, password):
+        def setpassword(self, password: str):
             return self.wrapper.send_command(f"!setpassword {password}")
 
         def runas(self, command):
@@ -146,11 +155,11 @@ class IW4MWrapper():
         def offlinemessages(self):
             return self.wrapper.send_command("!offlinemessages")
         
-        def sayall(self, message):
-            return self.wrapper.send_command(f"!sayall {message}")
+        def sayall(self, message, color):
+            return self.wrapper.send_command(f"!sayall {self.wrapper.color_handler(color)}{message}")
         
-        def say(self, message):
-            return self.wrapper.send_command(f"!say {message}")
+        def say(self, message, color):
+            return self.wrapper.send_command(f"!say {self.wrapper.color_handler(color)}{message}")
 
         def rules(self):
             return self.wrapper.send_command("!rules")
@@ -259,7 +268,7 @@ class IW4MWrapper():
                 return self.wrapper.send_command(f"!x {player}")
 
 class AsyncIW4MWrapper():
-    def __init__(self, base_url: str, server_id: int, cookie: str, _logging: bool):
+    def __init__(self, base_url: str, server_id: int, cookie: str, _logging: bool) -> None:
         self.base_url = base_url
         self.server_id = server_id
         self.cookie = cookie
@@ -286,6 +295,18 @@ class AsyncIW4MWrapper():
                 if self._logging:
                     logging.error(f"Error executing command '{command}': {e}")
                 raise
+
+    
+    async def color_handler(self, color) -> str:
+        color.lower()
+        colors = {
+            "black": "^0", "red": "^1", "green": "^2", 
+            "yellow": "^3","dblue": "^4","lblue": "^5", 
+            "pink": "^6", "white": "^7", "gray": "^8", 
+            "brown": "^9", "blink": "^F"
+        }
+        return await colors.get(color, "")
+    
     class Commands:
         def __init__(self, wrapper):
             self.wrapper = wrapper
@@ -372,12 +393,12 @@ class AsyncIW4MWrapper():
         async def offlinemessages(self):
             return await self.wrapper.send_command("!offlinemessages")
     
-        async def sayall(self, message):
-            return await self.wrapper.send_command(f"!sayall {message}")
+        async def sayall(self, message, color=None):
+            return await self.wrapper.send_command(f"!sayall {await self.wrapper.color_handler(color)}{message}")
     
-        async def say(self, message):
-            return await self.wrapper.send_command(f"!say {message}")
-
+        async def say(self, message, color=None):
+            return await self.wrapper.send_command(f"!say {await self.wrapper.color_handler(color)}{message}")
+        
         async def rules(self):
             return await self.wrapper.send_command("!rules")
     
@@ -502,3 +523,4 @@ class AsyncIW4MWrapper():
         except Exception as e:
             logging.error(f"Error reading log file: {e}")
             return f"Error reading log file: {e}"
+
