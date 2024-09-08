@@ -8,7 +8,7 @@
 create an instance of the `IW4MWrapper` class by providing your cookie, server address, and server ID
 
 ```python
-from iw4m_wrapper import IW4MWrapper
+from iw4m import IW4MWrapper
 
 # Initialize the IW4MWrapper
 iw4m = IW4MWrapper(
@@ -30,13 +30,7 @@ response = commands.kick("<player>")
 print(response)
 
 response = commands.change_map("<map>")
-print(response)
-
-response = commands.ban("<player>", "<reason>"):
-print(response)
-
-response = commands.tempban("<player>", "<duration>", "<reason>")
-print(response)
+print(response.text)
 ```
 <div style="padding-top:1rem"></div>
 <div style="height: 0.1rem;">
