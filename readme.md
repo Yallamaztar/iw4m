@@ -12,9 +12,9 @@ from iw4m import IW4MWrapper
 
 # Initialize the IW4MWrapper
 iw4m = IW4MWrapper(
-    server_address="http://your.server.address",
+    base_url="http://your.server.address",
     server_id=1234567890,
-    cookie="your_cookie_here"
+    cookie="your_cookie_here",
     _logging=True # Set True or False, 
 )                 # you can also read logs with function `get_logs()`
 ```
@@ -32,6 +32,9 @@ print(response)
 
 response = commands.change_map("<map>")
 print(response)
+
+response = commands.say("<message>", "<color>") # Colors: Red, Green, Yellow Dblue,                                          
+print(response)                                 # Lblue, Pink, White, Gray, Brown
 
 response = commands.ban("<player>", "<reason>"):
 print(response)
@@ -70,10 +73,13 @@ commands = iw4m.Commands(iw4m)
 response = await commands.kick("<player>") 
 print(response)
 
-response = awaitcommands.change_map("<map>")
+response = await commands.change_map("<map>")
 print(response)
 
-response = await commands.ban("<player>", "<reason>"):
+response = commands.say("<message>", "<color>") # Colors: Red, Green, Yellow Dblue,                                          
+print(response)                                 # Lblue, Pink, White, Gray, Brown
+
+response = await commands.ban("<player>", "<reason>")
 print(response)
 
 response = await commands.tempban("<player>", "<duration>", "<reason>")
