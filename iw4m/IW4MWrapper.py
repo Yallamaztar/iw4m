@@ -1,20 +1,8 @@
 
-import aiohttp, asyncio, aiofiles
+import aiohttp, aiofiles
 from requests import sessions
-from datetime import datetime
 import os, tempfile
 import logging
-
-LOGFILE = os.path.join(tempfile.gettempdir(), '{0}.{1}.log'.format(
-    os.path.basename(__file__),
-    datetime.now().strftime('%Y%m%dT%H%M%S')
-))
-
-logging.basicConfig(
-    filename=LOGFILE,
-    level=logging.DEBUG,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-)
 
 class IW4MWrapper():
     def __init__(self, base_url: str, server_id: int, cookie: str, _logging: bool) -> None:
@@ -25,6 +13,11 @@ class IW4MWrapper():
         self._logging = _logging
 
         if self._logging:
+            logging.basicConfig(
+                filename=os.path.join(os.path.dirname(__file__), 'tmp', 'iw4mAdmin.log'),
+                level=logging.DEBUG,
+                format='%(asctime)s - %(levelname)s - %(message)s',
+            )
             logging.info(f"Initialized IW4MWrapper for server {self.base_url} with ID {self.server_id}")
 
     def send_command(self, command: str) -> str:
@@ -61,7 +54,9 @@ class IW4MWrapper():
             return f"Error reading log file: {e}"   
 
     def color_handler(self, color) -> str:
-        color.lower()
+        if color == None:
+            return 
+        color = color.lower()
         colors = {
             "black": "^0", "red": "^1", "green": "^2", 
             "yellow": "^3","dblue": "^4","lblue": "^5", "pink": 
@@ -155,10 +150,10 @@ class IW4MWrapper():
         def offlinemessages(self):
             return self.wrapper.send_command("!offlinemessages")
         
-        def sayall(self, message, color):
+        def sayall(self, message, color=None):
             return self.wrapper.send_command(f"!sayall {self.wrapper.color_handler(color)}{message}")
         
-        def say(self, message, color):
+        def say(self, message, color=None):
             return self.wrapper.send_command(f"!say {self.wrapper.color_handler(color)}{message}")
 
         def rules(self):
@@ -275,7 +270,12 @@ class AsyncIW4MWrapper():
         self._logging = _logging
 
         if self._logging:
-            logging.info(f"Initialized IW4MWrapper for server {self.base_url} with ID {self.server_id}")
+            logging.basicConfig(
+                filename=os.path.join(os.path.dirname(__file__), 'tmp', 'iw4mAdmin.log'),
+                level=logging.DEBUG,
+                format='%(asctime)s - %(levelname)s - %(message)s',
+            )
+            logging.info(f"Initialized AsyncIW4MWrapper for server {self.base_url} with ID {self.server_id}")
 
     async def send_command(self, command):
         if self._logging:
@@ -288,17 +288,45 @@ class AsyncIW4MWrapper():
                     headers={"Cookie": self.cookie}
                 ) as response:
                     res = await response.text()
-                    logging.info(f"Command '{command}' executed successfully with response status: {response.status}")
-                return res
+                    if response.status == 200:
+                        logging.info(f"Command '{command}' executed successfully with response status: {response.status}")
+                        return f"Success: {res}" 
+                    elif response.status == 400:
+                        logging.error(f"Command '{command}' failed - Player not found. Status: {response.status}")
+                        return f"Error: Player not found (Status {response.status})"
+                    else:
+                        logging.error(f"Command '{command}' failed with response status: {response.status}")
+                        return f"Error: {res} (Status {response.status})"
             
             except aiohttp.ClientError as e:
                 if self._logging:
                     logging.error(f"Error executing command '{command}': {e}")
                 raise
 
-    
-    async def color_handler(self, color) -> str:
-        color.lower()
+
+    async def get_logs(self):
+        temp_dir = tempfile.gettempdir()
+        logs = [file for file in os.listdir(temp_dir) if file.endswith(".log")]
+
+        if not logs:
+            logging.exception("No log files found")
+            return "No log files found"
+        
+        files = sorted(logs, key=lambda file: os.path.getctime(os.path.join(temp_dir, file)), reverse=True)
+        path = os.path.join(temp_dir, files[0])
+
+        try:
+            async with aiofiles.open(path, 'r') as f:
+                contents = await f.read()
+                return contents
+        except Exception as e:
+            logging.error(f"Error reading log file: {e}")
+            return f"Error reading log file: {e}"
+
+    async def color_handler(self, color: str) -> str:
+        if color is None:
+            return ""
+        color = color.lower()
         colors = {
             "black": "^0", "red": "^1", "green": "^2", 
             "yellow": "^3","dblue": "^4","lblue": "^5", 
@@ -504,23 +532,4 @@ class AsyncIW4MWrapper():
                 return await self.wrapper.send_command("!x")
             else:
                 return await self.wrapper.send_command(f"!x {player}")
-    
-    async def get_logs(self):
-        temp_dir = tempfile.gettempdir()
-        logs = [file for file in os.listdir(temp_dir) if file.endswith(".log")]
-
-        if not logs:
-            logging.exception("No log files found")
-            return "No log files found"
-        
-        files = sorted(logs, key=lambda file: os.path.getctime(os.path.join(temp_dir, file)), reverse=True)
-        path = os.path.join(temp_dir, files[0])
-
-        try:
-            async with aiofiles.open(path, 'r') as f:
-                contents = await f.read()
-                return contents
-        except Exception as e:
-            logging.error(f"Error reading log file: {e}")
-            return f"Error reading log file: {e}"
 
