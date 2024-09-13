@@ -1,4 +1,4 @@
-# IW4M-Admin API Wrapper
+# IW4M-Admin API Wrapper 
 > A python wrapper made for the [IW4M-Admin](https://github.com/RaidMax/IW4M-Admin) server administration tool
 
 
@@ -14,8 +14,7 @@ from iw4m import IW4MWrapper
 iw4m = IW4MWrapper(
     base_url="http://your.server.address", # Replace with your server address
     server_id=1234567890,                  # Replace with your server ID
-    cookie="your_cookie_here",             # Replace with your .AspNetCore cookie
-    _logging=False                         # Set to True to enable logging
+    cookie="your_cookie_here",             # Replace with your .AspNetCore cookie                  
 )                 
 ```
 
@@ -33,6 +32,7 @@ print(response)
 response = commands.change_map("<map>")
 print(response)
 
+# <color> is optional
 response = commands.say("<message>", "<color>") # Colors: Red, Green, Yellow Dblue,                                          
 print(response)                                 # Lblue, Pink, White, Gray, Brown
 
@@ -74,7 +74,6 @@ iw4m = AsyncIW4MWrapper(
     base_url="http://your.server.address", # Replace with your server address
     server_id=1234567890,                  # Replace with your server ID
     cookie="your_cookie_here",             # Replace with your .AspNetCore cookie
-    _logging=False                         # Set to True to enable logging
 )
 ```
 
@@ -93,9 +92,10 @@ async def main():
     response = await commands.change_map("<map>")
     print(response)
 
-    response = commands.say("<message>", "<color>") # Colors: Red, Green, Yellow Dblue,                                          
-    print(response)                                 # Lblue, Pink, White, Gray, Brown
-
+    # <color> is optional
+    response = await commands.say("<message>", "<color>") # Colors: Red, Green, Yellow Dblue,                                          
+    print(response)                                       # Lblue, Pink, White, Gray, Brown
+    
     response = await commands.ban("<player>", "<reason>")
     print(response)
 
