@@ -659,15 +659,3 @@ class AsyncIW4MWrapper():
                 return await self.wrapper.send_command("!x")
             else:
                 return await self.wrapper.send_command(f"!x {player}")
-
-iw4m = IW4MWrapper(
-    base_url="http://141.11.196.83:1624",  # Replace with your server address
-    server_id=14111196834977,                  # Replace with your server ID
-    cookie="halfmoon_preferredMode=dark-mode; .AspNetCore.Cookies=CfDJ8JB_ut47XXtHijWY0jO8BEyS3RC7jaF1cRyUGCOROK0WouWjwLnaMwGqrVAA8JO0bpBaOWy3VwG_lVx8ZG6M8Hugsj468RV2UTpGSxYqLM8DLKvFrafrRbhUXci_FpreIJdWwNNnmcV6OADe4KnOM-ZjCsgKXXrmKVPCL3nvyOLUXhlFU8FIHbUIUIzkurt2VeMQXtm0udvwryrtJRWyZ0uYVy7Xm8QRsuas_r7vKt1In6Kx78eEkhzfU2hkTUTkush0TbqiEtgAtFJfYpr7ZuehQ9-EmuUBIWYvs7d9ia58h-efogkTLVexZVwo8BATxRf9lN0KkoPARbvX9604NKEjTAtBg3BMyLQb7uEciCB8okakY_duuz5ezPWeyzv3mhOeaei7e6x-xM0_KX9MwS596l8ksNH1G3RB7NDqhZz7mQ16dKYBR7CKcj7AAy_Wepdm5W7zT5Se6FVWnC-wQUIo2CkBXi6xPQf9uTNVnm5-ilHDNmbUvrxqRua1kU8Bhug5F7lRLO14ATX86WtGDK3XKESHwfYgfa1HIGsesB9cqXBLTYoPGeIU3cR9NBrJjWJBRO50WeBc1BWwm1_SKARsCVAL1b1nACBPWmt0lzhV5CrVPzioe02b8jVJewxRRco7j_Wi7iMMxPHNu1oUYsRIkflwLXpRajvJNrlHLtOLCzZySH76F0dPH4P3aRLrnJxe7mrGpl3mMkaljgoVbuJ0PsFnatk0IrtqkB581XmSY6lsoo1QW9ljfzQ7pflfk8-UCy8q0YM8ao7Yuc5rFI-1t8lqO7sW3cUbqmoBZJ4YuDqU7brxGl1xGuf0x5-DGhZZ7MgvpegWgvXW01RgIe0",             # Replace with your .AspNetCore cookie
-    _logging=True                         # Set to True to enable logging
-)           
-
-
-
-player_utils = iw4m.PlayerUtils(iw4m)
-print(player_utils.read_chat())
