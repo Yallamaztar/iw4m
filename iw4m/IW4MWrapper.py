@@ -1,11 +1,12 @@
 
 import aiohttp, aiofiles
 from requests import sessions
-import os, tempfile
+from bs4 import BeautifulSoup as bs
+import os, tempfile, re
 import logging
 
 class IW4MWrapper():
-    def __init__(self, base_url: str, server_id: int, cookie: str, _logging: bool) -> None:
+    def __init__(self, base_url: str, server_id: int, cookie: str, _logging: bool = False) -> None:
         self.base_url = base_url
         self.server_id = server_id
         self.session = sessions.Session()
@@ -59,11 +60,129 @@ class IW4MWrapper():
         color = color.lower()
         colors = {
             "black": "^0", "red": "^1", "green": "^2", 
-            "yellow": "^3","dblue": "^4","lblue": "^5", "pink": 
-            "^6", "white": "^7", "gray": "^8", "brown": "^9"
+            "yellow": "^3","dblue": "^4","lblue": "^5", 
+            "pink": "^6", "white": "^7", "gray": "^8", 
+            "brown": "^9", "blink": "^F", "box": "^HH"
         }
         return colors.get(color, "")
     
+    class PlayerUtils:
+        def __init__(self, wrapper) -> None:
+            self.wrapper = wrapper
+        
+        def read_chat(self) -> list:
+            chat = []
+            
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/").text
+            soup = bs(response, 'html.parser')
+            entries = soup.find_all('div', class_='text-truncate')
+    
+            for entry in entries:
+                sender_span = entry.find('span')
+                if sender_span:
+                    sender_tag = sender_span.find('colorcode')
+                    sender = sender_tag.get_text() if sender_tag else None
+
+                    message_span = entry.find_all('span')
+                    if len(message_span) > 1:
+                        message_tag = message_span[1].find('colorcode')
+                        message = message_tag.get_text() if message_tag else None
+
+                    chat.append((
+                        sender,
+                        message
+                    ))
+    
+            return chat
+
+        def get_players(self) -> list:
+            players = []
+            
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/").text
+            soup = bs(response, 'html.parser')
+            
+            links = soup.find_all('a', class_='text-light-dm text-dark-lm no-decoration text-truncate ml-5 mr-5')
+            for link in links:
+                colorcode = link.find('colorcode')
+                if colorcode:
+                    player = colorcode.text
+                    href   = link.get('href')
+                    players.append((player, href))
+            
+            return players
+
+        def info(self, player: str) -> dict:
+            info = {}
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/{player}").text
+            soup = bs(response, 'html.parser')
+
+            name = soup.find('span', class_='font-size-20 font-weight-medium text-force-break')
+            info['name'] = name.find('colorcode').text
+
+            guid = soup.find('div', class_='text-muted', id='altGuidFormatsDropdown')
+            info['guid'] = guid.text
+
+            ip_div = soup.find('div', class_='align-self-center align-self-md-start d-flex flex-row')
+            info['ip_address'] = ip_div.find('span', class_="text-muted mr-5").text
+
+            stats = {}
+            entries = soup.find_all('div', class_="profile-meta-entry")
+            for entry in entries:
+                _value, _title = entry.find('div', class_="profile-meta-value"), entry.find('div', "profile-meta-title")
+                if _value and _title:
+                    value = _value.find('colorcode').text.strip()
+                    title = ' '.join(_title.stripped_strings).strip()
+                    stats[title] = value
+            
+            info['stats'] = stats 
+            return info
+        
+        def chat_history(self, player: str, count: int) -> list:
+            messages = []
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/Client/Meta/{player}?offset=30&count={count}").text
+            soup = bs(response, 'html.parser')
+
+            entries = soup.find_all('div', class_='profile-meta-entry')
+
+            for entry in entries:
+                message = entry.find('span', class_='client-message')
+                if message:
+                    messages.append(message.text.strip())    
+
+            return messages
+        
+        def name_changes(self, player: str) -> list:
+            name_changes = []
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/Client/Profile/{player}?metaFilterType=AliasUpdate").text
+            soup = bs(response, 'html.parser')
+
+            entries = soup.find_all('div', class_='profile-meta-entry')
+            for entry in entries:
+                colorcode = entry.find('colorcode')
+                username = colorcode.text if colorcode else None
+
+                ip_address_tag = re.search(r'\[(\d{1,3}(?:\.\d{1,3}){3})\]', entry.text)
+                ip_address = ip_address_tag.group(1) if ip_address_tag else None
+
+                date_tag = entry.find('div', id=re.compile(r'metaContextDateToggle'))
+                date = date_tag.find('span', class_='text-light-dm text-dark-lm').text if date_tag else None
+
+                if all([username, ip_address, date]):
+                    name_changes.append((username, ip_address, date))
+
+            return name_changes
+
+        def administered_penalties(self, player: str) -> list:
+            pass
+
+        def received_penalties(self, player: str) -> list:
+            pass
+
+        def search_player(self, chat: bool = False, player: str = None, ip_address: str = None, guid: str = None, perm_level: str = None, 
+                          game: str = None, connected_since: str = None, older_first: bool = False):
+            pass
+
+
     class Commands:
         def __init__(self, wrapper) -> None:
             self.wrapper = wrapper
@@ -277,7 +396,7 @@ class AsyncIW4MWrapper():
             )
             logging.info(f"Initialized AsyncIW4MWrapper for server {self.base_url} with ID {self.server_id}")
 
-    async def send_command(self, command):
+    async def send_command(self, command) -> str:
         if self._logging:
             logging.info(f"Sending command '{command}' to server {self.base_url} with ID {self.server_id}")
 
@@ -304,7 +423,7 @@ class AsyncIW4MWrapper():
                 raise
 
 
-    async def get_logs(self):
+    async def get_logs(self) -> str:
         temp_dir = tempfile.gettempdir()
         logs = [file for file in os.listdir(temp_dir) if file.endswith(".log")]
 
@@ -335,6 +454,14 @@ class AsyncIW4MWrapper():
         }
         return await colors.get(color, "")
     
+    class PlayerUtils:
+        def __init__(self, wrapper):
+            self.wrapper = wrapper
+
+        async def read_chat(self):
+            pass
+
+
     class Commands:
         def __init__(self, wrapper):
             self.wrapper = wrapper
@@ -533,3 +660,14 @@ class AsyncIW4MWrapper():
             else:
                 return await self.wrapper.send_command(f"!x {player}")
 
+iw4m = IW4MWrapper(
+    base_url="http://141.11.196.83:1624",  # Replace with your server address
+    server_id=14111196834977,                  # Replace with your server ID
+    cookie="halfmoon_preferredMode=dark-mode; .AspNetCore.Cookies=CfDJ8JB_ut47XXtHijWY0jO8BEyS3RC7jaF1cRyUGCOROK0WouWjwLnaMwGqrVAA8JO0bpBaOWy3VwG_lVx8ZG6M8Hugsj468RV2UTpGSxYqLM8DLKvFrafrRbhUXci_FpreIJdWwNNnmcV6OADe4KnOM-ZjCsgKXXrmKVPCL3nvyOLUXhlFU8FIHbUIUIzkurt2VeMQXtm0udvwryrtJRWyZ0uYVy7Xm8QRsuas_r7vKt1In6Kx78eEkhzfU2hkTUTkush0TbqiEtgAtFJfYpr7ZuehQ9-EmuUBIWYvs7d9ia58h-efogkTLVexZVwo8BATxRf9lN0KkoPARbvX9604NKEjTAtBg3BMyLQb7uEciCB8okakY_duuz5ezPWeyzv3mhOeaei7e6x-xM0_KX9MwS596l8ksNH1G3RB7NDqhZz7mQ16dKYBR7CKcj7AAy_Wepdm5W7zT5Se6FVWnC-wQUIo2CkBXi6xPQf9uTNVnm5-ilHDNmbUvrxqRua1kU8Bhug5F7lRLO14ATX86WtGDK3XKESHwfYgfa1HIGsesB9cqXBLTYoPGeIU3cR9NBrJjWJBRO50WeBc1BWwm1_SKARsCVAL1b1nACBPWmt0lzhV5CrVPzioe02b8jVJewxRRco7j_Wi7iMMxPHNu1oUYsRIkflwLXpRajvJNrlHLtOLCzZySH76F0dPH4P3aRLrnJxe7mrGpl3mMkaljgoVbuJ0PsFnatk0IrtqkB581XmSY6lsoo1QW9ljfzQ7pflfk8-UCy8q0YM8ao7Yuc5rFI-1t8lqO7sW3cUbqmoBZJ4YuDqU7brxGl1xGuf0x5-DGhZZ7MgvpegWgvXW01RgIe0",             # Replace with your .AspNetCore cookie
+    _logging=True                         # Set to True to enable logging
+)           
+
+
+
+player_utils = iw4m.PlayerUtils(iw4m)
+print(player_utils.read_chat())
