@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="iw4m",
-    version="0.1.0",
+    version="0.1.2",
     author="budiworld",
     author_email="budi.world@yahoo.com",
     description="A Python wrapper for the IW4M-Admin API",
