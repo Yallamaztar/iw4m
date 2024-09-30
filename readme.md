@@ -13,10 +13,24 @@ This wrapper provides an easy way to interact with IW4M-Admin servers, enabling 
 - **Real-time Interaction**: Send messages to players and retrieve chat logs
 - **Async Support**: Full asynchronous support
 
-
 ---
 
 ## Getting Started
+
+### Installation 📦
+To install the IW4M-Admin API Wrapper you can use pip:
+
+#### Windows
+```bash 
+pip install iw4m
+```
+
+#### Linux/Mac
+```bash
+pip3 install iw4m
+```
+
+---
 
 ### Initialization ⚙️
 Create an instance of the `IW4MWrapper` class by providing your server details and authentication cookie
