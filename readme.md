@@ -184,22 +184,22 @@ The `Player` class provides methods for retrieving and managing player informati
     Returns:
         (dict): A dictionary containing the player's name, GUID, IP address, and statistics
 
-`chat_history(player: str, count: int)`
+`chat_history(client_id: str, count: int)`
 
-**Fetches the chat history for a specified player**
+**Fetches the chat history for a specified client id**
 
     Parameters:
-        player (str): The player's name
+        client_id (str): The player's client_id 
         count (int): The number of messages to retrieve
     Returns:
         (list): A list of chat messages sent by the player
+ 
+`name_changes(client_id: str)`
 
-`name_changes(player: str)`
-
-**Retrieves the name changes for a specified player**
+**Retrieves the name changes for a specified client id**
 
     Parameters:
-        player (str): The player's name
+        client_id (str): The player's client_id 
     Returns:
         (list): A list of tuples containing the old username, IP address, and date of change
 

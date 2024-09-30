@@ -129,9 +129,9 @@ class IW4MWrapper():
             info['stats'] = stats 
             return info
         
-        def chat_history(self, player: str, count: int):
+        def chat_history(self, client_id: str, count: int):
             messages = []
-            response = self.wrapper.session.get(f"{self.wrapper.base_url}/Client/Meta/{player}?offset=30&count={count}").text
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/Client/Meta/{client_id}?offset=30&count={count}").text
             soup = bs(response, 'html.parser')
 
             entries = soup.find_all('div', class_='profile-meta-entry')
@@ -143,9 +143,9 @@ class IW4MWrapper():
 
             return messages
         
-        def name_changes(self, player: str):
+        def name_changes(self, client_id: str):
             name_changes = []
-            response = self.wrapper.session.get(f"{self.wrapper.base_url}/Client/Profile/{player}?metaFilterType=AliasUpdate").text
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/Client/Profile/{client_id}?metaFilterType=AliasUpdate").text
             soup = bs(response, 'html.parser')
 
             entries = soup.find_all('div', class_='profile-meta-entry')
