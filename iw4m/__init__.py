@@ -347,8 +347,8 @@ class IW4MWrapper():
         def warnclear(self, player: str):
             return self.game_utils.send_command(f"!warnclear {player}")
 
-        def kick(self, player: str):
-            return self.game_utils.send_command(f"!kick {player}")
+        def kick(self, player: str, reason: str):
+            return self.game_utils.send_command(f"!kick {player} {reason}")
 
         def tempban(self, player: str, duration: str, reason: str):
             return self.game_utils.send_command(f"!tempban {player} {duration} {reason}")
@@ -907,8 +907,8 @@ class AsyncIW4MWrapper():
         async def warnclear(self, player: str):
             return await self.game_utils.send_command(f"!warnclear {player}")
         
-        async def kick(self, player: str):
-            return await self.game_utils.send_command(f"!kick {player}")
+        async def kick(self, player: str, reason: str):
+            return await self.game_utils.send_command(f"!kick {player} {reason}")
 
         async def tempban(self, player: str, duration: str, reason: str):
             return await self.game_utils.send_command(f"!tempban {player} {duration} {reason}")
