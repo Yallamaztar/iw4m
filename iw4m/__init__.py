@@ -24,16 +24,6 @@ class IW4MWrapper():
                 print(response.status_code())
             return e, response.status_code
         
-        def color_handler(self, color: str):
-            color = color.lower()
-            colors = {
-                "black": "^0", "red": "^1", "green": "^2", 
-                "yellow": "^3","dblue": "^4","lblue": "^5", 
-                "pink": "^6", "white": "^7", "gray": "^8", 
-                "brown": "^9", "blink": "^F", "box": "^HH"
-            }
-            return colors.get(color, "")
-        
         def read_chat(self):
             chat = []
             
@@ -392,11 +382,11 @@ class IW4MWrapper():
         def offlinemessages(self):
             return self.game_utils.send_command("!offlinemessages")
         
-        def sayall(self, message, color=None):
-            return self.game_utils.send_command(f"!sayall {self.wrapper.color_handler(color)}{message}")
+        def sayall(self, message):
+            return self.game_utils.send_command(f"!sayall{message}")
         
-        def say(self, message, color=None):
-            return self.game_utils.send_command(f"!say {self.wrapper.color_handler(color)}{message}")
+        def say(self, message):
+            return self.game_utils.send_command(f"!say {message}")
 
         def rules(self):
             return self.game_utils.send_command("!rules")
@@ -952,11 +942,11 @@ class AsyncIW4MWrapper():
         async def offlinemessages(self):
             return await self.game_utils.send_command("!offlinemessages")
         
-        async def sayall(self, message, color=None):
-            return await self.game_utils.send_command(f"!sayall {self.wrapper.color_handler(color)}{message}")
+        async def sayall(self, message):
+            return await self.game_utils.send_command(f"!sayall {message}")
         
-        async def say(self, message, color=None):
-            return await self.game_utils.send_command(f"!say {self.wrapper.color_handler(color)}{message}")
+        async def say(self, message):
+            return await self.game_utils.send_command(f"!say {message}")
 
         async def rules(self):
             return await self.game_utils.send_command("!rules")
