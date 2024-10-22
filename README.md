@@ -53,7 +53,7 @@ Use the Commands class to interact with the server
 commands = iw4m.Commands(iw4m)
 
 # Example usage
-response = commands.kick("<player>") 
+response = commands.kick("<player>", "<reaason>") 
 print(response)
 
 response = commands.ban("<player>", "<reason>")
@@ -89,7 +89,7 @@ commands = iw4m.Commands(iw4m)
 
 async def main():
     # Example usage
-    response = await commands.kick("<player>") 
+    response = await commands.kick("<player>", "<reaason>")  
     print(response)
 
     response = await commands.ban("<player>", "<reason>")
