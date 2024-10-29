@@ -14,7 +14,25 @@ class IW4MWrapper():
     class GameUtils:
         def __init__(self, wrapper):
             self.wrapper = wrapper
+
+        def get_server_ids(self): 
+            server_ids = []
+
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/Console").text
+            soup = bs(response, 'html.parser')
+
+            select = soup.find('select', id="console_server_select")
+            for option in select.find_all('option'):
+                name = option.text.strip()
+                id = option['value']
+
+                server_ids.append({
+                    'server': name,
+                    'id': id
+                })
             
+            return server_ids
+
         def send_command(self, command: str): 
             try:
                 response = self.wrapper.session.get(f"{self.wrapper.base_url}/Console/Execute?serverId={self.wrapper.server_id}&command={command}")
@@ -81,6 +99,53 @@ class IW4MWrapper():
                     players.append((player, href))
             
             return players
+
+        def get_roles(self):
+            roles = []
+
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/Client/Privileged").text
+            soup = bs(response, 'html.parser')
+
+            entries = soup.find_all('table', class_="table mb-20")
+            for entry in entries:
+                header = entry.find('thead').find('tr').find_all('th')
+                role = header[0].text
+
+                roles.append({'role': role})
+            
+            return roles
+
+        def get_admins(self, role: str = "all", count: int = None):
+            admins = []
+
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/Client/Privileged").text
+            soup = bs(response, 'html.parser')
+
+            entries = soup.find_all('table', class_="table mb-20")
+            for entry in entries:
+                if count is not None and len(admins) >= count:
+                    break
+
+                header = entry.find('thead').find('tr').find_all('th')
+                _role = header[0].text.strip()
+
+                if role == "all" or _role.lower() == role.lower():
+                    for row in entry.find('tbody').find_all('tr'):
+                        name = row.find('a', class_='text-force-break').text.strip()
+                        game = row.find('div', class_='badge').text.strip() if row.find('div', class_='badge') else "N/A"
+                        last_connected = row.find_all('td')[-1].text.strip()
+
+                        admins.append({
+                            'name': name,
+                            'role': _role,
+                            'game': game,
+                            'last_connected': last_connected
+                        })
+
+                    if count is not None and len(admins) >= count:
+                        break
+
+            return admins
 
     class Player:
         def __init__(self, wrapper):
@@ -503,7 +568,30 @@ class AsyncIW4MWrapper():
     class GameUtils:
         def __init__(self, wrapper):
             self.wrapper = wrapper
+        
+        async def get_server_ids(self): 
+            server_ids = []
+
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    f"{self.wrapper.base_url}/Console",
+                    headers={"Cookie": self.wrapper.cookie}
+                ) as response:
+                    
+                    text = await response.text()
+                    soup = bs(text, 'html.parser')
+
+                    select = soup.find('select', id="console_server_select")
+                    for option in select.find_all('option'):
+                        name = option.text.strip()
+                        id = option['value']
+                        server_ids.append({
+                            'server': name,
+                            'id': id
+                        })
             
+                    return server_ids
+
         async def send_command(self, command: str):
             async with aiohttp.ClientSession() as session:
                 try:
@@ -515,7 +603,7 @@ class AsyncIW4MWrapper():
         
                 except aiohttp.ClientError as e:
                     raise
-
+        
         async def color_handler(self, color: str):
             if color is None:
                 return ""
@@ -600,6 +688,65 @@ class AsyncIW4MWrapper():
                             players.append((player, href))
 
             return players
+        
+        async def get_roles(self):
+            roles = []
+
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    f"{self.wrapper.base_url}/Client/Privileged",
+                    headers={"Cookie": self.wrapper.cookie}
+                ) as response:
+                    
+                    response_text = await response.text()
+                    soup = bs(response_text, 'html.parser')
+
+                    entries = soup.find_all('table', class_="table mb-20")
+                    for entry in entries:
+                        header = entry.find('thead').find('tr').find_all('th')
+                        role = header[0].text
+
+                        roles.append({'role': role})
+            
+            return roles
+
+        async def get_admins(self, role: str = "all", count: int = None):
+            admins = []
+
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    f"{self.wrapper.base_url}/Client/Privileged",
+                    headers={"Cookie": self.wrapper.cookie}
+                ) as response:
+                    
+                    response_text = await response.text()
+                    soup = bs(response_text, 'html.parser')
+
+                    entries = soup.find_all('table', class_="table mb-20")
+                    for entry in entries:
+                        if count is not None and len(admins) >= count:
+                            break
+                        
+                        header = entry.find('thead').find('tr').find_all('th')
+                        _role = header[0].text.strip()     
+
+                        if role == "all" or _role.lower() == role.lower():
+                            for row in entry.find('tbody').find_all('tr'):
+                                name = row.find('a', class_='text-force-break').text.strip()
+                                game = row.find('div', class_='badge').text.strip() if row.find('div', class_='badge') else "N/A"
+                                last_connected = row.find_all('td')[-1].text.strip()
+
+                                admins.append({
+                                    'name': name,
+                                    'role': _role,
+                                    'game': game,
+                                'last_connected': last_connected
+                                })
+
+                                if count is not None and len(admins) >= count:
+                                    break
+
+                    return admins
     
     class Player:
         def __init__(self, wrapper):

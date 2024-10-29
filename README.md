@@ -53,7 +53,7 @@ Use the Commands class to interact with the server
 commands = iw4m.Commands(iw4m)
 
 # Example usage
-response = commands.kick("<player>", "<reaason>") 
+response = commands.kick("<player>") 
 print(response)
 
 response = commands.ban("<player>", "<reason>")
@@ -89,7 +89,7 @@ commands = iw4m.Commands(iw4m)
 
 async def main():
     # Example usage
-    response = await commands.kick("<player>", "<reaason>")  
+    response = await commands.kick("<player>") 
     print(response)
 
     response = await commands.ban("<player>", "<reason>")
@@ -160,6 +160,22 @@ The `GameUtils` class provides utility functions for interacting with the IW4M-A
         (list): A list of tuples, each containing a player's name and their link
 
 
+`get_roles()`
+
+**Retrieves a list of available roles on the server**
+
+    Returns: A list of roles available
+
+`get_admins(role: str = "all", count: int = None)`
+
+**Retrieves a list of administrators based on their role**
+
+    Parameters:
+        role (str): The role to filter by (default is "all")
+        count (int, optional): The number of admins to return (default is unlimited)
+
+    Returns: A list of dictionaries containing details about the administrators
+
 ---
 
 ## Player Class 👾
@@ -172,6 +188,7 @@ The `Player` class provides methods for retrieving and managing player informati
 
     Parameters:
         client_id (str): The client ID of the player
+
     Returns:
         (str): The response from the server containing player statistics
 
@@ -181,6 +198,7 @@ The `Player` class provides methods for retrieving and managing player informati
 
     Parameters:
         client_id (str): The client ID of the player
+
     Returns:
         (dict): A dictionary containing the player's name, GUID, IP address, and statistics
 
@@ -191,6 +209,7 @@ The `Player` class provides methods for retrieving and managing player informati
     Parameters:
         client_id (str): The player's client_id 
         count (int): The number of messages to retrieve
+
     Returns:
         (list): A list of chat messages sent by the player
  
@@ -200,6 +219,7 @@ The `Player` class provides methods for retrieving and managing player informati
 
     Parameters:
         client_id (str): The player's client_id 
+
     Returns:
         (list): A list of tuples containing the old username, IP address, and date of change
 
@@ -210,6 +230,7 @@ The `Player` class provides methods for retrieving and managing player informati
     Parameters:
         client_id (int): The client ID of the player
         count (int, optional): The number of penalties to return (default is 30)
+    
     Returns:
         (list): A list of dictionaries containing details about the administered penalties
 
@@ -220,6 +241,7 @@ The `Player` class provides methods for retrieving and managing player informati
     Parameters:
         client_id (int): The client ID of the player
         count (int, optional): The number of penalties to return (default is 30)
+    
     Returns:
         (list): A list of dictionaries containing details about the received penalties
 
@@ -230,6 +252,7 @@ The `Player` class provides methods for retrieving and managing player informati
     Parameters:
         client_id (int): The client ID of the player
         count (int, optional): The number of connection entries to return (default is 30)
+    
     Returns:
         (list): A list of dictionaries containing connection history details
 
@@ -240,6 +263,7 @@ The `Player` class provides methods for retrieving and managing player informati
     Parameters:
         client_id (int): The client ID of the player
         count (int, optional): The number of permission entries to return (default is 30)
+    
     Returns:
         (list): A list of dictionaries containing permission change details
 
