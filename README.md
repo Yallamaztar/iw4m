@@ -108,6 +108,15 @@ All available commands can be found at your server's help page, and the function
 ## GameUtils Class 🎮
 The `GameUtils` class provides utility functions for interacting with the IW4M-Admin server
 ### Methods
+`get_server_ids()`
+
+**Retrieves a list of available servers and their corresponding IDs.**
+
+    Returns:
+        (list): A list of dictionaries, each containing:
+            - server (str): The name of the server
+            - id (str): The unique identifier for the server
+
 `send_command(command: str)`
 
 **executes an iw4m-admin console command and returns the response**
