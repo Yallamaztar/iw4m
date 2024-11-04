@@ -14,3 +14,4 @@ setuptools==75.3.0
 soupsieve==2.6
 urllib3==2.2.3
 yarl==1.17.1
+zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
