@@ -105,8 +105,8 @@ All available commands can be found at your server's help page, and the function
 
 ---
 
-## GameUtils Class 🎮
-The `GameUtils` class provides utility functions for interacting with the IW4M-Admin server
+## Server Class 🎮 
+The `Server` class provides utility functions for interacting with the IW4M-Admin server
 ### Methods
 `get_server_ids()`
 
@@ -146,6 +146,16 @@ The `GameUtils` class provides utility functions for interacting with the IW4M-A
 
     Returns:
         (list): A list of tuples, each containing the sender's name and their message
+
+`recent_clients(offset: int = 0)`
+
+**Retrieves a list of recent clients.**
+
+    Parameters:
+        offset (int, optional): The offset for pagination (default is 0)
+
+    Returns:
+        (list): A list of dictionaries containing details about recent clients.
 
 ```find_player(name: str = "", xuid: str = "", count: int = 1, offset: int = 0, direction: int = 0)```
 
@@ -222,6 +232,26 @@ The `Player` class provides methods for retrieving and managing player informati
     Returns:
         (list): A list of chat messages sent by the player
  
+`advanced_stats(client_id: str)`
+
+**Retrieves advanced statistics for a specified player.**
+
+    Parameters:
+        client_id (str): The client ID of the player
+
+    Returns:
+        (dict): A dictionary containing advanced statistics, including player stats, hit locations, and weapon usage.
+
+`recent_clients(offset: int = 0)`
+
+**Retrieves a list of recent clients.**
+
+    Parameters:
+        offset (int, optional): The offset for pagination (default is 0)
+
+    Returns:
+        (list): A list of dictionaries containing details about recent clients.
+
 `name_changes(client_id: str)`
 
 **Retrieves the name changes for a specified client id**

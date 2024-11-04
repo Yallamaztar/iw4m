@@ -11,9 +11,13 @@ class IW4MWrapper():
         self.session = sessions.Session()
         self.session.headers.update({ "Cookie": cookie })
     
-    class GameUtils:
+    class Server:
         def __init__(self, wrapper):
             self.wrapper = wrapper
+
+        def status(self):
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/api/status")
+            return response.json()
 
         def get_server_ids(self): 
             server_ids = []
@@ -114,6 +118,39 @@ class IW4MWrapper():
                 roles.append({'role': role})
             
             return roles
+        
+        def recent_clients(self, offset: int = 0):
+            recent_clients = []
+
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/Action/RecentClientsForm?offset={offset}&count=20").text
+            soup = bs(response, 'html.parser')  
+            
+            entries = soup.find_all('div', class_="bg-very-dark-dm bg-light-ex-lm p-15 rounded mb-10")
+            for entry in entries:
+                user = entry.find('div', class_="d-flex flex-row")
+                if user:
+                    
+                    client_data = {}
+
+                    name = user.find('a', class_="h4 mr-auto").find('colorcode').text
+                    link = user.find('a')['href']
+                    client_data['name'] = name
+                    client_data['link'] = link
+
+                    tooltip = user.find('div', {'data-toggle': 'tooltip'})
+                    if tooltip:
+                        country = tooltip.get('data-title')
+                        client_data['country'] = country
+
+            
+                ip_address = entry.find('div', class_='align-self-center mr-auto').text.strip()
+                last_seen = entry.find('div', class_='align-self-center text-muted font-size-12').text.strip()
+                client_data['ip_address'] = ip_address
+                client_data['last_seen'] = last_seen
+
+                recent_clients.append(client_data)
+            
+            return recent_clients
 
         def get_admins(self, role: str = "all", count: int = None):
             admins = []
@@ -146,6 +183,43 @@ class IW4MWrapper():
                         break
 
             return admins
+        
+        def get_top_players(self, count: int = 30):
+            top_players = {}
+
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/Stats/GetTopPlayersAsync?offset=0&count={count}&serverId=0").text
+            soup = bs(response, 'html.parser')
+
+            entries = soup.find_all('div', class_="card m-0 mt-15 p-20 d-flex flex-column flex-md-row justify-content-between")
+            for entry in entries:
+
+                rank_div = entry.find('div', class_="d-flex flex-column w-full w-md-quarter")
+                if rank_div:
+                    rank = rank_div.find('div', class_="d-flex text-muted").find('div').text
+                    top_players["#"+rank] = {}
+
+                    name_tag = rank_div.find('div', class_="d-flex flex-row")
+                    if name_tag:
+
+                        name = name_tag.find('colorcode').text
+                        link = name_tag.find('a')['href']
+
+                        top_players["#"+rank]['name'] = name
+                        top_players["#"+rank]['link'] = link
+                    
+                    rating_tag = rank_div.find('div', class_="font-size-14").find('span').text.strip()
+                    top_players["#"+rank]['rating'] = rating_tag
+
+                    stats = {}
+                    stats_tag = rank_div.find('div', class_="d-flex flex-column font-size-12 text-right text-md-left")
+                    for div in stats_tag.find_all('div'):
+                        primary_stat = div.find('span', class_='text-primary').text.strip()
+                        secondary_stat = div.find('span', class_='text-muted').text.strip()
+                        stats[secondary_stat] = primary_stat  
+                    
+                    top_players["#"+rank]['stats'] = stats
+
+            return top_players
 
     class Player:
         def __init__(self, wrapper):
@@ -155,10 +229,92 @@ class IW4MWrapper():
             response = self.wrapper.session.get(f"{self.wrapper.base_url}/api/stats/{client_id}")
             return response.text
         
+        def advanced_stats(self, client_id: str):
+            advanced_stats = {}
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/clientstatistics/{client_id}/advanced").text
+            soup = bs(response, 'html.parser')
+
+            top_card = soup.find('div', class_="align-self-center d-flex flex-column flex-lg-row flex-fill mb-15")
+            if top_card:
+
+                name_tag = top_card.find('a', class_="no-decoration")
+                if name_tag:
+
+                    advanced_stats['name'] = name_tag.text
+                    advanced_stats['link'] = name_tag['href']
+
+                icon = top_card.find('img', class_="img-fluid align-self-center w-75")
+
+                advanced_stats['icon-url'] = self.wrapper.base_url + icon['src']
+                advanced_stats['summary'] = top_card.find('div', id='client_stats_summary').text
+            
+
+            main_card = soup.find('div', class_="flex-fill flex-xl-grow-1")
+            if main_card:
+                
+                advanced_stats['player_stats'] = []
+
+                stats = main_card.find_all('div', class_='stat-card bg-very-dark-dm bg-light-ex-lm p-15 m-md-5 w-half w-md-200 rounded flex-fill')
+                for stat in stats:
+                    key = stat.find('div', class_='font-size-12 text-muted').text.strip()
+                    value = stat.find('div', class_='m-0 font-size-16 text-primary').text.strip()
+                    advanced_stats['player_stats'].append({key: value})
+            
+            bottom_div = soup.find('div', class_='d-flex flex-wrap flex-column-reverse flex-xl-row')
+            if bottom_div:
+
+                hit_locations = bottom_div.find_all('div', class_='mr-0 mr-xl-20 flex-fill flex-xl-grow-1')
+                if hit_locations:
+
+                    for location in hit_locations:
+                        hit_title = location.find('h4', class_="content-title mb-15 mt-15").find('colorcode').text
+                        hit_tbody = location.find('tbody')
+                        if hit_tbody:
+
+                            advanced_stats[hit_title] = [] 
+
+                            hit_table_rows = hit_tbody.find_all('tr', class_="bg-dark-dm bg-light-lm d-none d-lg-table-row")
+                            for hit_row in hit_table_rows:
+
+                                hit_spans = hit_row.find_all('span')
+                                if len(hit_spans) >= 4: 
+                                    advanced_stats[hit_title].append({
+                                        'location': hit_spans[0].text,
+                                        'hits': hit_spans[1].text,
+                                        'percentage': hit_spans[2].text,
+                                        'damage': hit_spans[3].text
+                                    })
+
+                weapon_usages = bottom_div.find_all('div', class_='flex-fill flex-xl-grow-1')
+                if weapon_usages:
+                    for usage in weapon_usages:
+                        weapon_title = usage.find('h4', class_='content-title mb-15 mt-15').find('colorcode').text
+                        weapon_tbody = usage.find('tbody')
+                        if weapon_tbody:
+                            
+                            advanced_stats[weapon_title] = []
+
+                            weapon_table_rows = weapon_tbody.find_all('tr', 'bg-dark-dm bg-light-lm d-none d-lg-table-row')
+                            for weapon_row in weapon_table_rows:
+                                weapon_spans = weapon_row.find_all('span')
+                                if len(weapon_spans) >= 5:
+                                    advanced_stats[weapon_title].append({
+                                        'weapon': weapon_spans[0].text,
+                                        'favorite_attachments': weapon_spans[1].text,
+                                        'kills': weapon_spans[2].text,
+                                        'hits': weapon_spans[3].text,
+                                        'damage': weapon_spans[4].text,
+                                        'usage': weapon_spans[5].text,
+                                    })
+
+            return advanced_stats
+                                            
         def info(self, client_id: str):
             info = {}
             response = self.wrapper.session.get(f"{self.wrapper.base_url}/Client/Profile/{client_id}").text
             soup = bs(response, 'html.parser')
+
+            info['link'] = f"{self.wrapper.base_url}/Client/Profile/{client_id}"
 
             name = soup.find('span', class_='font-size-20 font-weight-medium text-force-break')
             if name:
@@ -168,9 +324,35 @@ class IW4MWrapper():
             if guid:
                 info['guid'] = guid.text
 
+            note = soup.find('div', class_="align-self-center font-size-12 font-weight-light pl-10 pr-10")
+            if note:
+                note = note.text.strip()
+                info['note'] = note
+
             ip = soup.find('div', class_='align-self-center align-self-md-start d-flex flex-row')
             if ip:
                 info['ip_address'] = ip.find('span', class_="text-muted mr-5").text
+                
+                info['old_ips'] = []
+
+                ips = ip.find_all('a', class_='profile-ip-lookup dropdown-item p-0 m-0')
+                for tag in ips:
+                    _ip = tag.get('data-ip')
+                    if _ip:
+                        info['old_ips'].append(_ip)
+
+            level_div = soup.find('div', class_=lambda x: x and 'font-weight-bold' in x and 'font-size-16' in x)
+            if level_div:
+                level_class = " ".join(level_div.get('class', []))
+        
+                if 'level-color-0' in level_class:
+                    info['level'] = 'User'
+                elif 'level-color--1' in level_class:
+                    info['level'] = 'Banned'
+                elif 'level-color-3' in level_class:
+                    info['level'] = 'Administrator'
+                else:
+                    info['level'] = 'SeniorOrHigher'
 
             stats = {}
             entries = soup.find_all('div', class_="profile-meta-entry")
@@ -363,7 +545,7 @@ class IW4MWrapper():
     class Commands:
         def __init__(self, wrapper):
             self.wrapper = wrapper
-            self.game_utils = self.wrapper.GameUtils(self.wrapper)
+            self.game_utils = self.wrapper.Server(self.wrapper)
         
         #  Command List   #
         def setlevel(self, player: str, level: str):
@@ -565,10 +747,18 @@ class AsyncIW4MWrapper():
         self.server_id = server_id
         self.cookie = cookie
         
-    class GameUtils:
+    class Server:
         def __init__(self, wrapper):
             self.wrapper = wrapper
         
+        async def status(self):
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    f"{self.wrapper.base_url}/api/status",
+                    headers={"Cookie": self.wrapper.cookie}
+                ) as response: 
+                    return await response.json()
+
         async def get_server_ids(self): 
             server_ids = []
 
@@ -603,19 +793,6 @@ class AsyncIW4MWrapper():
         
                 except aiohttp.ClientError as e:
                     raise
-        
-        async def color_handler(self, color: str):
-            if color is None:
-                return ""
-            color = color.lower()
-            colors = {
-                "black": "^0", "red": "^1", "green": "^2", 
-                "yellow": "^3","dblue": "^4","lblue": "^5", 
-                "pink": "^6", "white": "^7", "gray": "^8", 
-                "brown": "^9", "blink": "^F", "box": "^HH"
-            }
-            return await colors.get(color, "")
-        
         
         async def read_chat(self):
             chat = []
@@ -709,6 +886,38 @@ class AsyncIW4MWrapper():
                         roles.append({'role': role})
             
             return roles
+        
+        async def recent_clients(self, offset: int = 0):
+            recent_clients = []
+
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f"{self.wrapper.base_url}/Action/RecentClientsForm?offset={offset}&count=20",
+                                       headers={"Cookie": self.wrapper.cookie}) as response:
+                    response_text = await response.text()
+                    soup = bs(response_text, 'html.parser')
+            
+                    entries = soup.find_all('div', class_="bg-very-dark-dm bg-light-ex-lm p-15 rounded mb-10")
+                    for entry in entries:
+                        user = entry.find('div', class_="d-flex flex-row")
+                        if user:
+                            client_data = {}
+
+                            name = user.find('a', class_="h4 mr-auto").find('colorcode').text
+                            link = user.find('a')['href']
+                            client_data['name'] = name
+                            client_data['link'] = link
+
+                            tooltip = user.find('div', {'data-toggle': 'tooltip'})
+                            client_data['country'] = tooltip.get('data-title') if tooltip else None
+
+                            ip_address = entry.find('div', class_='align-self-center mr-auto').text.strip()
+                            last_seen = entry.find('div', class_='align-self-center text-muted font-size-12').text.strip()
+                            client_data['ip_address'] = ip_address
+                            client_data['last_seen'] = last_seen
+
+                            recent_clients.append(client_data)
+                    
+            return recent_clients
 
         async def get_admins(self, role: str = "all", count: int = None):
             admins = []
@@ -747,6 +956,46 @@ class AsyncIW4MWrapper():
                                     break
 
                     return admins
+                
+        async def get_top_players(self, count: int = 20):
+            top_players = {}
+
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    f"{self.wrapper.base_url}/Stats/GetTopPlayersAsync?offset=0&count={count}&serverId=0",
+                    headers={"Cookie": self.wrapper.cookie}
+                ) as response:
+                    response_text = await response.text()
+                    soup = bs(response_text, 'html.parser')
+
+                    entries = soup.find_all('div', class_="card m-0 mt-15 p-20 d-flex flex-column flex-md-row justify-content-between")
+                    for entry in entries:
+                        rank_div = entry.find('div', class_="d-flex flex-column w-full w-md-quarter")
+                        if rank_div:
+                            rank = rank_div.find('div', class_="d-flex text-muted").find('div').text
+                            top_players["#" + rank] = {}
+
+                            name_tag = rank_div.find('div', class_="d-flex flex-row")
+                            if name_tag:
+                                name = name_tag.find('colorcode').text
+                                link = name_tag.find('a')['href']
+
+                                top_players["#" + rank]['name'] = name
+                                top_players["#" + rank]['link'] = link
+
+                            rating_tag = rank_div.find('div', class_="font-size-14").find('span').text.strip()
+                            top_players["#" + rank]['rating'] = rating_tag
+
+                            stats = {}
+                            stats_tag = rank_div.find('div', class_="d-flex flex-column font-size-12 text-right text-md-left")
+                            for div in stats_tag.find_all('div'):
+                                primary_stat = div.find('span', class_='text-primary').text.strip()
+                                secondary_stat = div.find('span', class_='text-muted').text.strip()
+                                stats[secondary_stat] = primary_stat
+
+                            top_players["#" + rank]['stats'] = stats
+
+            return top_players
     
     class Player:
         def __init__(self, wrapper):
@@ -761,16 +1010,88 @@ class AsyncIW4MWrapper():
                     response_text = await response.text()
                     return response_text
         
+        async def advanced_stats(self, client_id: str):
+            advanced_stats = {}
+    
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f"{self.wrapper.base_url}/clientstatistics/{client_id}/advanced",
+                                       headers={"Cookie": self.wrapper.cookie}) as response:
+                    response_text = await response.text()
+                    soup = bs(response_text, 'html.parser')
+
+                    top_card = soup.find('div', class_="align-self-center d-flex flex-column flex-lg-row flex-fill mb-15")
+                    if top_card:
+                        name_tag = top_card.find('a', class_="no-decoration")
+                        if name_tag:
+                            advanced_stats['name'] = name_tag.text
+                            advanced_stats['link'] = name_tag['href']
+
+                        icon = top_card.find('img', class_="img-fluid align-self-center w-75")
+                        if icon:
+                            advanced_stats['icon-url'] = self.wrapper.base_url + icon['src']
+                
+                        summary = top_card.find('div', id='client_stats_summary')
+                        advanced_stats['summary'] = summary.text if summary else None
+
+                    main_card = soup.find('div', class_="flex-fill flex-xl-grow-1")
+                    if main_card:
+                        advanced_stats['player_stats'] = []
+                        stats = main_card.find_all('div', class_='stat-card bg-very-dark-dm bg-light-ex-lm p-15 m-md-5 w-half w-md-200 rounded flex-fill')
+
+                        for stat in stats:
+                            key = stat.find('div', class_='font-size-12 text-muted').text.strip()
+                            value = stat.find('div', class_='m-0 font-size-16 text-primary').text.strip()
+                            advanced_stats['player_stats'].append({key: value})
+
+                    bottom_div = soup.find('div', class_='d-flex flex-wrap flex-column-reverse flex-xl-row')
+                    if bottom_div:
+                        hit_locations = bottom_div.find_all('div', class_='mr-0 mr-xl-20 flex-fill flex-xl-grow-1')
+                        for location in hit_locations:
+                            hit_title = location.find('h4', class_="content-title mb-15 mt-15").find('colorcode').text
+                            hit_tbody = location.find('tbody')
+                            if hit_tbody:
+                                advanced_stats[hit_title] = []
+                                hit_table_rows = hit_tbody.find_all('tr', class_="bg-dark-dm bg-light-lm d-none d-lg-table-row")
+                                for hit_row in hit_table_rows:
+                                    hit_spans = hit_row.find_all('span')
+                                    if len(hit_spans) >= 4:
+                                        advanced_stats[hit_title].append({
+                                            'location': hit_spans[0].text,
+                                            'hits': hit_spans[1].text,
+                                            'percentage': hit_spans[2].text,
+                                            'damage': hit_spans[3].text
+                                        })
+
+                        weapon_usages = bottom_div.find_all('div', class_='flex-fill flex-xl-grow-1')
+                        for usage in weapon_usages:
+                            weapon_title = usage.find('h4', class_='content-title mb-15 mt-15').find('colorcode').text
+                            weapon_tbody = usage.find('tbody')
+                            if weapon_tbody:
+                                advanced_stats[weapon_title] = []
+                                weapon_table_rows = weapon_tbody.find_all('tr', 'bg-dark-dm bg-light-lm d-none d-lg-table-row')
+                                for weapon_row in weapon_table_rows:
+                                    weapon_spans = weapon_row.find_all('span')
+                                    if len(weapon_spans) >= 5:
+                                        advanced_stats[weapon_title].append({
+                                            'weapon': weapon_spans[0].text,
+                                            'favorite_attachments': weapon_spans[1].text,
+                                            'kills': weapon_spans[2].text,
+                                            'hits': weapon_spans[3].text,
+                                            'damage': weapon_spans[4].text,
+                                            'usage': weapon_spans[5].text,
+                                        })
+
+            return advanced_stats
+        
         async def info(self, client_id: str):
             info = {}
             async with aiohttp.ClientSession() as session:
-                async with session.get(
-                    f"{self.wrapper.base_url}/Client/Profile/{client_id}",
-                    headers={"Cookie": self.wrapper.cookie}
-                ) as response:
-                    
+                async with session.get(f"{self.wrapper.base_url}/Client/Profile/{client_id}",
+                                       headers={"Cookie": self.wrapper.cookie}) as response:
                     response_text = await response.text()
                     soup = bs(response_text, 'html.parser')
+
+                    info['link'] = f"{self.wrapper.base_url}/Client/Profile/{client_id}"
 
                     name = soup.find('span', class_='font-size-20 font-weight-medium text-force-break')
                     if name:
@@ -780,9 +1101,32 @@ class AsyncIW4MWrapper():
                     if guid:
                         info['guid'] = guid.text
 
+                    note = soup.find('div', class_="align-self-center font-size-12 font-weight-light pl-10 pr-10")
+                    if note:
+                        info['note'] = note.text.strip()
+
                     ip = soup.find('div', class_='align-self-center align-self-md-start d-flex flex-row')
                     if ip:
                         info['ip_address'] = ip.find('span', class_="text-muted mr-5").text
+                        info['old_ips'] = []
+
+                        ips = ip.find_all('a', class_='profile-ip-lookup dropdown-item p-0 m-0')
+                        for tag in ips:
+                            _ip = tag.get('data-ip')
+                            if _ip:
+                                info['old_ips'].append(_ip)
+
+                    level_div = soup.find('div', class_=lambda x: x and 'font-weight-bold' in x and 'font-size-16' in x)
+                    if level_div:
+                        level_class = " ".join(level_div.get('class', []))
+                        if 'level-color-0' in level_class:
+                            info['level'] = 'User'
+                        elif 'level-color--1' in level_class:
+                            info['level'] = 'Banned'
+                        elif 'level-color-3' in level_class:
+                            info['level'] = 'Administrator'
+                        else:
+                            info['level'] = 'SeniorOrHigher'
 
                     stats = {}
                     entries = soup.find_all('div', class_="profile-meta-entry")
@@ -1005,7 +1349,7 @@ class AsyncIW4MWrapper():
     class Commands:
         def __init__(self, wrapper):
             self.wrapper = wrapper
-            self.game_utils = self.wrapper.GameUtils(self.wrapper)
+            self.game_utils = self.wrapper.Server(self.wrapper)
     
         #  Command List   #
         async def setlevel(self, player: str, level: str):
