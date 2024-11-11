@@ -59,6 +59,8 @@ class IW4MWrapper():
                     sender_tag = sender_span.find('colorcode')
                     sender = sender_tag.get_text() if sender_tag else None
 
+                    message = None
+                    
                     message_span = entry.find_all('span')
                     if len(message_span) > 1:
                         message_tag = message_span[1].find('colorcode')
