@@ -64,10 +64,8 @@ class IW4MWrapper():
                         message_tag = message_span[1].find('colorcode')
                         message = message_tag.get_text() if message_tag else None
 
-                    chat.append((
-                        sender,
-                        message
-                    ))
+                    if sender and message:
+                        chat.append((sender, message))
     
             return chat
         
