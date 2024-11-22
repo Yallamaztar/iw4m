@@ -1,5 +1,5 @@
 # ---------------------------- #
-# VPN detection example
+# VPN Detection Plugin
 # Author:  Budiworld
 # GitHub:  https://github.com/Yallamaztar/iw4m
 # ---------------------------- #
@@ -7,41 +7,46 @@
 import os, time, requests
 from iw4m import IW4MWrapper
 
-iw4m = IW4MWrapper(
-    base_url  = os.environ['IW4M_URL'],      
-    server_id = os.environ['IW4M_ID'],              
-    cookie    = os.environ['IW4M_HEADER']
-)
+class VPNDetectionPlugin:
+    SERVER_KICK_VPNS_NOTALLOWED = "VPN's Aren't Allowed On This Server"
+    
+    def __init__(self):
+        self.iw4m = IW4MWrapper(
+            base_url=os.environ['IW4M_URL'],
+            server_id=os.environ['IW4M_ID'],
+            cookie=os.environ['IW4M_HEADER']
+        )
 
-server   = iw4m.Server(iw4m)
-commands = iw4m.Commands(iw4m)
-player   = iw4m.Player(iw4m)
+        self.server = self.iw4m.Server(self.iw4m)
+        self.commands = self.iw4m.Commands(self.iw4m)
+        self.player = self.iw4m.Player(self.iw4m)
 
-SERVER_KICK_VPNS_NOTALLOWED = "VPN's Aren't Allowed On This Server"
+    def is_whitelisted(self, guid: int) -> bool:
+        return self.player.info(guid)['vpn_whitelist']
+    
+    def is_vpn(self, ip_address: str) -> bool:
+        r = requests.get(f"https://api.xdefcon.com/proxy/check/?ip={ip_address}").json()
+        return r['success'] and r['proxy']
 
-def is_whitelisted(guid: int) -> bool:
-    return player.info(guid)['vpn_whitelist']
-
-def is_vpn(ip_address: str) -> bool:
-    r = requests.get(f"https://api.xdefcon.com/proxy/check/?ip={ip_address}").json()
-    if r['success']:
-        return r['proxy']
-
-def get_player_info(guid: int) -> str:
-    return player.info(guid)['ip_address'], player.info(guid)['name']
-
-def main() -> None:
-    while True:
-        players = server.get_players()
+    def get_player_info(self, guid: int) -> tuple:
+        info = self.player.info(guid)
+        return info['ip_address'], info['name']
+    
+    def check_players(self):
+        players = self.server.get_players()
         for player in players:
             guid = player['url'][16:]
-            ip_addr, client = get_player_info(guid)
+            ip_addr, client = self.get_player_info(guid)
 
-            if not is_whitelisted(guid) and is_vpn(ip_addr):
-                commands.kick(client, SERVER_KICK_VPNS_NOTALLOWED)
+            if not self.is_whitelisted(guid) and self.is_vpn(ip_addr):
+                self.commands.kick(client, self.SERVER_KICK_VPNS_NOTALLOWED)
+                print(f"Kicked player: {client} with IP: {ip_addr}")
 
-        time.sleep(2.5)
+    def start(self):
+        while True:
+            self.check_players()
+            time.sleep(2.5)
 
 if __name__ == '__main__':
-    main()
-        
+    plugin = VPNDetectionPlugin()
+    plugin.start()
