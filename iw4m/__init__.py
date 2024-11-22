@@ -10,7 +10,7 @@ class IW4MWrapper():
         self.server_id = server_id
         self.session = sessions.Session()
         self.session.headers.update({ "Cookie": cookie })
-    
+
     class Server:
         def __init__(self, wrapper):
             self.wrapper = wrapper
@@ -88,8 +88,8 @@ class IW4MWrapper():
             ).text
             return response
         
-        def get_players(self):
-            players = []
+        def get_users(self):
+            users = []
             
             response = self.wrapper.session.get(f"{self.wrapper.base_url}/").text
             soup = bs(response, 'html.parser')
@@ -100,10 +100,49 @@ class IW4MWrapper():
                 if colorcode:
                     player = colorcode.text
                     href   = link.get('href')
-                    players.append((player, href))
+                    users.append((player, href))
             
-            return players
+            return users
+        
+        def get_players(self):
+            players = []
+            
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/").text
+            soup = bs(response, 'html.parser')
 
+            seniors = soup.find_all('a', class_='level-color-4 no-decoration text-truncate ml-5 mr-5')
+            for senior in seniors:
+                senior_colorcode = senior.find('colorcode')
+                if senior_colorcode:
+                    players.append({
+                        'role': 'senior',
+                        'name': senior_colorcode.text.strip(),
+                        'url': senior.get('href').strip()
+                    })
+
+            admins = soup.find_all('a', class_='level-color-3 no-decoration text-truncate ml-5 mr-5')
+            for admin in admins:
+                admin_colorcode = admin.find('colorcode')
+                if admin_colorcode:
+                    players.append({
+                        'role': 'admin',
+                        'name': admin_colorcode.text.strip(),
+                        'url': admin.get('href').strip()
+                    })
+    
+
+            users = soup.find_all('a', class_='text-light-dm text-dark-lm no-decoration text-truncate ml-5 mr-5')
+            for user in users:
+                colorcode = user.find('colorcode')
+                if colorcode:
+                    players.append({
+                        'role': 'user',
+                        'name': colorcode.text.strip(),
+                        'url': user.get('href').strip()
+                    })
+
+            return players
+        
         def get_roles(self):
             roles = []
 
@@ -151,6 +190,32 @@ class IW4MWrapper():
                 recent_clients.append(client_data)
             
             return recent_clients
+
+        def get_audit_logs(self):
+            audit_logs = []
+        
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/Admin/AuditLog").text
+            soup = bs(response, 'html.parser')
+        
+            tbody = soup.find('tbody', id='audit_log_table_body')
+            if not tbody:
+                return audit_logs 
+            
+            trs = tbody.find_all('tr', class_='d-none d-lg-table-row bg-dark-dm bg-light-lm')
+            for tr in trs:
+                columns = tr.find_all('td')
+
+                audit_log = {
+                    'type': columns[0].text.strip(),
+                    'origin': columns[1].find('a').text.strip(),
+                    'target': columns[2].find('a').text.strip() if columns[2].find('a') else columns[2].text.strip(),
+                    'data': columns[4].text.strip(),
+                    'time': columns[5].text.strip()
+                }
+
+                audit_logs.append(audit_log)
+            
+            return audit_logs
 
         def get_admins(self, role: str = "all", count: int = None):
             admins = []
@@ -220,7 +285,7 @@ class IW4MWrapper():
                     top_players["#"+rank]['stats'] = stats
 
             return top_players
-
+          
     class Player:
         def __init__(self, wrapper):
             self.wrapper = wrapper
@@ -354,6 +419,20 @@ class IW4MWrapper():
                 else:
                     info['level'] = 'SeniorOrHigher'
 
+            vpn_whitelist = soup.find_all('div', class_="btn btn-block")
+            if vpn_whitelist:
+                for div in vpn_whitelist:
+                    whitelisted = div.find('i', class_="oi oi-circle-x mr-5 font-size-12") #
+                    if whitelisted:
+                        w_span = div.find('span').text
+                        if w_span:
+                            info['vpn_whitelist'] = True
+                    
+                    not_whitelisted = div.find('i', class_="oi oi-circle-check mr-5 font-size-12")
+                    if not_whitelisted:
+                        n_span = div.find('span').text
+                        if n_span:
+                            info['vpn_whitelist'] = False                
             stats = {}
             entries = soup.find_all('div', class_="profile-meta-entry")
             for entry in entries:
