@@ -924,15 +924,15 @@ class AsyncIW4MWrapper():
                     response_text = await response.text()
                     return response_text
         
-        async def get_players(self):
-            players = []
+        async def get_users(self):
+            users = []
+
             async with aiohttp.ClientSession() as session:
                 async with session.get(
-                    f"{self.wrapper.base_url}/",
-                    headers={"Cookie": self.wrapper.cookie}
+                    f"{self.wrapper.base_url}/"
                 ) as response:
-                    
-                    response_text = await response.text()
+
+                    reponse_text = await response.text()
                     soup = bs(response_text, 'html.parser')
 
                     links = soup.find_all('a', class_='text-light-dm text-dark-lm no-decoration text-truncate ml-5 mr-5')
@@ -940,11 +940,55 @@ class AsyncIW4MWrapper():
                         colorcode = link.find('colorcode')
                         if colorcode:
                             player = colorcode.text
-                            href = link.get('href')
-                            players.append((player, href))
+                            href   = link.get('href')
+                            users.append((player, href))
 
-            return players
-        
+                    return users
+
+        async def get_players(self):
+            players = []
+
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    f"{self.wrapper.base_url}/",
+                    headers={"Cookie": self.wrapper.cookie}
+                ) as response:
+                    
+                    reponse_text = await response.text()
+                    soup = bs(reponse_text, 'html.parser')
+
+                    seniors = soup.find_all('a', class_='level-color-4 no-decoration text-truncate ml-5 mr-5')
+                    for senior in seniors:
+                        senior_colorcode = senior.find('colorcode')
+                        if senior_colorcode:
+                            players.append({
+                                'role': 'senior',
+                                'name': senior_colorcode.text.strip(),
+                                'url': senior.get('href').strip()
+                            })
+
+                    admins = soup.find_all('a', class_='level-color-3 no-decoration text-truncate ml-5 mr-5')
+                    for admin in admins:
+                        admin_colorcode = admin.find('colorcode')
+                        if admin_colorcode:
+                            players.append({
+                                'role': admin,
+                                'name': admin_colorcode.text.strip(),
+                                'url': admin.get('href').strip()
+                            })
+
+                    users = soup.find_all('a', class_='text-light-dm text-dark-lm no-decoration text-truncate ml-5 mr-5')
+                    for user in users:
+                        colorcode = user.find('colorcode')
+                        if colorcode:
+                            players.append({
+                                'role': 'user',
+                                'name': colorcode.text.strip(),
+                                'url': user.get('href').strip()
+                            })
+                    
+                    return players
+
         async def get_roles(self):
             roles = []
 
@@ -1165,8 +1209,7 @@ class AsyncIW4MWrapper():
         async def info(self, client_id: str):
             info = {}
             async with aiohttp.ClientSession() as session:
-                async with session.get(f"{self.wrapper.base_url}/Client/Profile/{client_id}",
-                                       headers={"Cookie": self.wrapper.cookie}) as response:
+                async with session.get(f"{self.wrapper.base_url}/Client/Profile/{client_id}", headers={"Cookie": self.wrapper.cookie}) as response:
                     response_text = await response.text()
                     soup = bs(response_text, 'html.parser')
 
@@ -1206,6 +1249,21 @@ class AsyncIW4MWrapper():
                             info['level'] = 'Administrator'
                         else:
                             info['level'] = 'SeniorOrHigher'
+                    
+                    vpn_whitelist = soup.find_all('div', class_="btn btn-block")
+                    if vpn_whitelist:
+                        for div in vpn_whitelist:
+                            whitelisted = div.find('i', class_="oi oi-circle-x mr-5 font-size-12") #
+                            if whitelisted:
+                                w_span = div.find('span').text
+                                if w_span:
+                                    info['vpn_whitelist'] = True
+                    
+                            not_whitelisted = div.find('i', class_="oi oi-circle-check mr-5 font-size-12")
+                            if not_whitelisted:
+                                n_span = div.find('span').text
+                                if n_span:
+                                    info['vpn_whitelist'] = False
 
                     stats = {}
                     entries = soup.find_all('div', class_="profile-meta-entry")
@@ -1521,8 +1579,8 @@ class AsyncIW4MWrapper():
         async def rules(self):
             return await self.game_utils.send_command("!rules")
         
-        async def ping(self):
-            return await self.game_utils.send_command("!ping")
+        async def ping(self, player):
+            return await self.game_utils.send_command(f"!ping {player}")
         
         async def setgravatar(self, email):
             return await self.game_utils.send_command(f"!setgravatar {email}")
