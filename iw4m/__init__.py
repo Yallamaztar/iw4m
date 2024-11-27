@@ -932,7 +932,7 @@ class AsyncIW4MWrapper():
                     f"{self.wrapper.base_url}/"
                 ) as response:
 
-                    reponse_text = await response.text()
+                    response_text = await response.text()
                     soup = bs(response_text, 'html.parser')
 
                     links = soup.find_all('a', class_='text-light-dm text-dark-lm no-decoration text-truncate ml-5 mr-5')
@@ -954,8 +954,8 @@ class AsyncIW4MWrapper():
                     headers={"Cookie": self.wrapper.cookie}
                 ) as response:
                     
-                    reponse_text = await response.text()
-                    soup = bs(reponse_text, 'html.parser')
+                    response_text = await response.text()
+                    soup = bs(response_text, 'html.parser')
 
                     seniors = soup.find_all('a', class_='level-color-4 no-decoration text-truncate ml-5 mr-5')
                     for senior in seniors:
