@@ -208,6 +208,7 @@ class IW4MWrapper():
                 audit_log = {
                     'type': columns[0].text.strip(),
                     'origin': columns[1].find('a').text.strip(),
+                    'href': columns[1].find('a').get('href').strip(),
                     'target': columns[2].find('a').text.strip() if columns[2].find('a') else columns[2].text.strip(),
                     'data': columns[4].text.strip(),
                     'time': columns[5].text.strip()
