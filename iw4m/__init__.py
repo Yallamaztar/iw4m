@@ -16,8 +16,10 @@ class IW4MWrapper():
             self.wrapper = wrapper
 
         def status(self):
-            response = self.wrapper.session.get(f"{self.wrapper.base_url}/api/status")
-            return response.json()
+            return self.wrapper.session.get(f"{self.wrapper.base_url}/api/status").json()
+        
+        def info(self):
+            return self.wrapper.session.get(f"{self.wrapper.base_url}/api/info").json()
 
         def get_server_ids(self): 
             server_ids = []
@@ -374,7 +376,10 @@ class IW4MWrapper():
                                     })
 
             return advanced_stats
-                                            
+        
+        def client_info(self, client_id: str):
+            return self.wrapper.session.get(f"{self.wrapper.base_url}/api/client/{client_id}").json()
+
         def info(self, client_id: str):
             info = {}
             response = self.wrapper.session.get(f"{self.wrapper.base_url}/Client/Profile/{client_id}").text
@@ -838,6 +843,14 @@ class AsyncIW4MWrapper():
                     headers={"Cookie": self.wrapper.cookie}
                 ) as response: 
                     return await response.json()
+            
+        async def info(self):
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    f"{self.wrapper.base_url}/api/info",
+                    headers={"Cookie": self.wrapper.cookie}
+                ) as response:
+                    return await response.json()
 
         async def get_server_ids(self): 
             server_ids = []
@@ -1207,6 +1220,12 @@ class AsyncIW4MWrapper():
 
             return advanced_stats
         
+        async def client_info(self, client_id: str):
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f"{self.wrapper.base_url}/api/client/{client_id}", headers={"Cookie": self.wrapper.cookie}) as response:
+                    return await response.json()
+
+
         async def info(self, client_id: str):
             info = {}
             async with aiohttp.ClientSession() as session:
