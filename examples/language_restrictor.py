@@ -45,5 +45,5 @@ class LanguageRestrictorPlugin:
 
 if __name__ == '__main__':
     plugin = LanguageRestrictorPlugin()
-    plugin.add_language("fr")
+    plugin.add_language("fr") # France
     plugin.start(interval=86.4) 
