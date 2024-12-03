@@ -111,6 +111,26 @@ class IW4MWrapper():
             
             response = self.wrapper.session.get(f"{self.wrapper.base_url}/").text
             soup = bs(response, 'html.parser')
+            
+            creators = soup.find_all('a', class_='level-color-6 no-decoration text-truncate ml-5 mr-5')
+            for creator in creators:
+                creator_colorcode = creator.find('colorcode')
+                if creator_colorcode:
+                    players.append({
+                        'role': 'creator',
+                        'name': creator_colorcode.text.strip(),
+                        'url': creator.get('href').strip()
+                    })
+
+            owners = soup.find_all('a', class_='level-color-5 no-decoration text-truncate ml-5 mr-5')
+            for owner in owners:
+                owner_colorcode = owner.find('colorcode')
+                if owner_colorcode:
+                    players.append({
+                        'role': 'owner',
+                        'name': owner_colorcode.text.strip(),
+                        'url': owner.get('href').strip()
+                    })
 
             seniors = soup.find_all('a', class_='level-color-4 no-decoration text-truncate ml-5 mr-5')
             for senior in seniors:
