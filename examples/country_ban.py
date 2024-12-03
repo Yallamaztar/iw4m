@@ -13,7 +13,7 @@ class CountryBanPlugin:
     def __init__(self):
         self.banned_countries = []
 
-        self.iw4m = IW4MWrapper(
+       self.iw4m = IW4MWrapper(
             base_url=os.environ['IW4M_URL'],
             server_id=os.environ['IW4M_ID'],
             cookie=os.environ['IW4M_HEADER']
@@ -21,7 +21,7 @@ class CountryBanPlugin:
 
         self.server   = self.iw4m.Server(self.iw4m)
         self.commands = self.iw4m.Commands(self.iw4m)
-        self.player   = self.iw4m.Player(self.iw4m)
+        self.player   = self.iw4m.Player(self.iw4m) 
 
     def add_banned_country(self, country: str):
         country = country.lower()
