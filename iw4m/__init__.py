@@ -163,7 +163,7 @@ class IW4MWrapper():
                         'url': user.get('href').strip()
                     })
             
-            flagged = soup.find_all('a', class_="level-color1 no-decoration text-truncate ml-5 mr-5")
+            flagged = soup.find_all('a', class_="level-color-1 no-decoration text-truncate ml-5 mr-5")
             for flag in flagged:
                 flagged_colorcode = flag.find('colorcode')
                 if flagged_colorcode:
