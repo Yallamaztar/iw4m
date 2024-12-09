@@ -178,16 +178,16 @@ class IW4MWrapper():
         def get_roles(self):
             roles = []
 
-            response = self.wrapper.session.get(f"{self.wrapper.base_url}/Client/Privileged").text
+            response = self.wrapper.session.get(f'{self.wrapper.base_url}/Action/editForm/?id=982&meta=""').text
             soup = bs(response, 'html.parser')
 
-            entries = soup.find_all('table', class_="table mb-20")
-            for entry in entries:
-                header = entry.find('thead').find('tr').find_all('th')
-                role = header[0].text
-
-                roles.append({'role': role})
-            
+            select = soup.find('select', {'name': 'level'})
+            if select:
+                options = select.find_all('option')
+                for option in options:
+                    role = option.get('value')
+                    if role: 
+                        roles.append(role)
             return roles
         
         def recent_clients(self, offset: int = 0):
@@ -1000,6 +1000,26 @@ class AsyncIW4MWrapper():
                     
                     response_text = await response.text()
                     soup = bs(response_text, 'html.parser')
+                    
+                    creators = soup.find_all('a', class_='level-color-6 no-decoration text-truncate ml-5 mr-5')
+                    for creator in creators:
+                        creator_colorcode = creator.find('colorcode')
+                        if creator_colorcode:
+                            players.append({
+                                'role': 'creator',
+                                'name': creator_colorcode.text.strip(),
+                                'url': creator.get('href').strip()
+                            })
+
+                    owners = soup.find_all('a', class_='level-color-5 no-decoration text-truncate ml-5 mr-5')
+                    for owner in owners:
+                        owner_colorcode = owner.find('colorcode')
+                        if owner_colorcode:
+                            players.append({
+                                'role': 'owner',
+                                'name': owner_colorcode.text.strip(),
+                                'url': owner.get('href').strip()
+                            })
 
                     seniors = soup.find_all('a', class_='level-color-4 no-decoration text-truncate ml-5 mr-5')
                     for senior in seniors:
@@ -1031,6 +1051,16 @@ class AsyncIW4MWrapper():
                                 'url': user.get('href').strip()
                             })
                     
+                    flagged = soup.find_all('a', class_="level-color-1 no-decoration text-truncate ml-5 mr-5")
+                    for flag in flagged:
+                        flagged_colorcode = flag.find('colorcode')
+                        if flagged_colorcode:
+                            players.append({
+                                'role': 'flagged',
+                                'name': flagged_colorcode.text.strip(),
+                                'url': user.get('href').strip()
+                            })
+
                     return players
 
         async def get_roles(self):
