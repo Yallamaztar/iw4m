@@ -1,7 +1,12 @@
+# ---------------------------- #
+# Language Restrictor Plugin
+# Author:  Budiworld
+# GitHub:  https://github.com/Yallamaztar/iw4m
+# ---------------------------- #
+
 import os, time
 import detectlanguage
 from iw4m import IW4MWrapper
-
 
 class LanguageRestrictorPlugin:
     SERVER_KICK_LANGUAGENOTALLOWED = "This language isn't allowed on this server"
