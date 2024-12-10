@@ -1,315 +1,392 @@
-# IW4M-Admin API Wrapper 🚀
-> A Python wrapper designed for the [IW4M-Admin](https://github.com/RaidMax/IW4M-Admin) server administration tool 🛠️
+![http://152.53.132.41:1624](https://files.oaiusercontent.com/file-H9NcrwXUEUXJB4GMeaBseM?se=2024-12-10T08%3A25%3A59Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D604800%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3D1c0b305a-43d6-4160-bf38-56c221bc2c7e.webp&sig=5S4iSXttKAyvEKs1LrmmKg7emkjiK39xjZ0LashQA6k%3D)
+hop on brownies :)
 
-This wrapper provides an easy way to interact with IW4M-Admin servers, enabling server commands, retrieving player information, and managing penalties through Python scripts. It supports both synchronous and asynchronous usage
+<div style="padding-bottom: 1.5rem;"></div>
 
----
+<div align="center">
+    <h1 style="font-size: 2.7rem; font-weight: 800;">
+        <span style="color: #82C8F5;">
+            IW4M
+        </span>
+        -
+        <span style="color: #82C8F5;">
+            Admin
+        </span> 
+        <span style="color: #82C8F5;">
+            Wrapper
+        </span> 
+        🎮
+    </h1>
+    <p style="font-size: 1.25rem; font-weight: 500; margin-bottom: -0.7rem">An <span style="color: #82C8F5;">easy</span>-to-<span style="color: #82C8F5;">use</span> Python wrapper for interacting with the IW4M-Admin</p>
+</div>
 
-## Features 🌟
 
-- **Command Execution**: Perform in-game commands like kick, ban, change map, and more
-- **Player Management**: Fetch player stats, connection history, and chat history
-- **Penalty Management**: Issue and track penalties (warnings, bans, etc)
-- **Real-time Interaction**: Send messages to players and retrieve chat logs
-- **Async Support**: Full asynchronous support
+## <h1 style="font-weight: 800; font-size:2.5rem; border: solid transparent; margin-bottom: 1rem;">Intro<span style="color: #82C8F5;">duction</span></h1>
 
----
-
-## Getting Started
-
-### Installation 📦
-To install the IW4M-Admin API Wrapper you can use pip:
-
-#### Windows
-```bash 
-pip install iw4m
-```
-
-#### Linux/Mac
-```bash
-pip3 install iw4m
-```
+<p style="font-size: 1.1rem;">Welcome to <strong>the official wiki</strong> for the <em>IW4M-Admin Wrapper</em>! This wrapper allows you to <strong>easily interact with the IW4M-Admin server</strong> through a simple Python interface. Whether you're  server staff or a developer, this wrapper will simplify your interactions with IW4M-Admin, enabling you to manage players, retrieve statistics, and much more 📊</p>
 
 ---
 
-### Initialization ⚙️
-Create an instance of the `IW4MWrapper` class by providing your server details and authentication cookie
+<div align="center">
+    <h1 style="margin-bottom: -1.5rem; border: solid transparent; font-weight: 800; font-size: 3rem;">Table of Contents</h1>
+</div>
 
-```python
-from iw4m import IW4MWrapper
+<div style="display: flex; gap: 1rem; padding: 20px; border: solid transparent; flex-wrap: wrap;">
+    <!-- Server Class Section -->
+    <div style="flex: 1; border: 0.15rem solid #82C8F5; border-radius: 10px; padding: 15px;">
+        <h2 style="font-size: 2.5rem; font-weight: 700;">
+            <a href="#server-class" style="text-decoration: none; color: white;">
+                Server <span style="color: #82C8F5;">Class</span> 🎮
+            </a>
+        </h2>
+        <ul style="list-style: none; padding: 0; line-height: 1.8;">
+            <li><a href="#status" style="color: #91C1E6; font-size: 1.1rem;">status()</a></li>
+            <li><a href="#info" style="color: #91C1E6;">info()</a></li>
+            <li><a href="#get_server_ids" style="color: #91C1E6;">get_server_ids()</a></li>
+            <li><a href="#send_command" style="color: #91C1E6;">send_command()</a></li>
+            <li><a href="#read_chat" style="color: #91C1E6;">read_chat()</a></li>
+            <li><a href="#recent_clients" style="color: #91C1E6;">recent_clients()</a></li>
+            <li><a href="#find_player" style="color: #91C1E6;">find_player()</a></li>
+            <li><a href="#get_users" style="color: #91C1E6;">get_users()</a></li>
+            <li><a href="#get_players" style="color: #91C1E6;">get_players()</a></li>
+            <li><a href="#get_roles" style="color: #91C1E6;">get_roles()</a></li>
+            <li><a href="#get_admins" style="color: #91C1E6;">get_admins()</a></li>
+            <li><a href="#get_audit_logs" style="color: #91C1E6;">get_audit_logs()</a></li>
+            <li><a href="#get_client_penalties" style="color: #91C1E6;">get_client_penalties()</a></li>
+            <li><a href="#get_top_players" style="color: #91C1E6;">get_top_players()</a></li>
+        </ul>
+    </div>
+    <!-- Player Class Section -->
+    <div style="flex: 1; border: 0.15rem solid #82C8F5; border-radius: 10px; padding: 15px; background-color: transparent;">
+        <h2 style="font-size: 2.5rem; font-weight: 700;">
+            <a href="#server-class" style="text-decoration: none; color: white;">
+                Player <span style="color: #82C8F5;">Class</span>👾
+            </a>
+        </h2>
+        <ul style="list-style: none; padding: 0; line-height: 1.8;">
+            <li><a href="#stats" style="color: #91C1E6; font-size: 1.1rem;">stats()</a></li>
+            <li><a href="#advanced_stats" style="color: #91C1E6; font-size: 1.1rem;">advanced_stats()</a></li>
+            <li><a href="#client_info" style="color: #91C1E6; font-size: 1.1rem;">client_info()</a></li>
+            <li><a href="#info" style="color: #91C1E6; font-size: 1.1rem;">info()</a></li>
+            <li><a href="#chat_history" style="color: #91C1E6; font-size: 1.1rem;">chat_history()</a></li>
+            <li><a href="#name_changes" style="color: #91C1E6; font-size: 1.1rem;">name_changes()</a></li>
+            <li><a href="#administered_penalties" style="color: #91C1E6; font-size: 1.1rem;">administered_penalties()</a></li>
+            <li><a href="#received_penalties" style="color: #91C1E6; font-size: 1.1rem;">received_penalties()</a></li>
+            <li><a href="#connection_history" style="color: #91C1E6; font-size: 1.1rem;">connection_history()</a></li>
+            <li><a href="#permissions" style="color: #91C1E6; font-size: 1.1rem;">permissions()</a></li>
+        </ul>
+    </div>
+</div>
 
-iw4m = IW4MWrapper(
-    base_url="http://your.iw4m.com",       # Replace with your server address 
-    server_id=1234567890,                  # Replace with your server ID
-    cookie=".AspNetCore.Cookies=CfB_u..."  # Replace with your .AspNetCore cookie
-)
-```
+<div align="center" id="server-class">
+    <h1 style="padding-top: 5rem; padding-bottom: 0.2rem; font-weight: 800; font-size: 3rem;">Server Class 💻</h1>
+    <p style="font-size: 1.2rem; color: #white;">The Server class provides utility functions for interacting with the IW4M-Admin servers</p>
+</div>
 
-### Commands 📜
-Use the Commands class to interact with the server
+![http://152.53.132.41:1624](https://files.oaiusercontent.com/file-H9NcrwXUEUXJB4GMeaBseM?se=2024-12-10T08%3A25%3A59Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D604800%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3D1c0b305a-43d6-4160-bf38-56c221bc2c7e.webp&sig=5S4iSXttKAyvEKs1LrmmKg7emkjiK39xjZ0LashQA6k%3D)
+hop on brownies :)
 
-```python
-# Create an instance of Commands
-commands = iw4m.Commands(iw4m)
+<div style="padding-bottom: 1.5rem;"></div>
 
-# Example usage
-response = commands.kick("<player>", "<reason>") 
-print(response)
-
-response = commands.ban("<player>", "<reason>")
-print(response)
-
-response = commands.tempban("<player>", "<duration>", "<reason>")
-print(response)
-```
-All available commands can be found at your server's help page, and the function names in the Commands class match the command names listed there.
-
-
----
-
-### Initialization (Async) 🌐
-Create an instance of the AsyncIW4MWrapper class by providing your cookie, server address, and server ID
-
-```python
-from iw4m import AsyncIW4MWrapper
-import asyncio
-
-iw4m = AsyncIW4MWrapper(
-    base_url="http://your.iw4m.com",       # Replace with your server address 
-    server_id=1234567890,                  # Replace with your server ID
-    cookie=".AspNetCore.Cookies=CfB_u..."  # Replace with your .AspNetCore cookie
-)
-```
-
-### Commands (Async) ⚡
-Use the Commands class to interact with the server, all methods are asynchronous and should be awaited
-```python
-# Create an instance of Commands
-commands = iw4m.Commands(iw4m)
-
-async def main():
-    # Example usage
-    response = await commands.kick("<player>", "<reason>") 
-    print(response)
-
-    response = await commands.ban("<player>", "<reason>")
-    print(response)
-
-    response = await commands.tempban("<player>", "<duration>", "<reason>")
-    print(response)
-
-asyncio.run(main())
-```
-All available commands can be found at your server's help page, and the function names in the Commands class match the command names listed there.
-
-
----
-
-## Server Class 🎮 
-The `Server` class provides utility functions for interacting with the IW4M-Admin server
-### Methods
-`get_server_ids()`
-
-**Retrieves a list of available servers and their corresponding IDs.**
-
-    Returns:
-        (list): A list of dictionaries, each containing:
-            - server (str): The name of the server
-            - id (str): The unique identifier for the server
-
-`send_command(command: str)`
-
-**executes an iw4m-admin console command and returns the response**
-
-    Parameters:
-        command (str): The command to execute
-
-    Returns:
-        (str): Response from the server
-
-    Raises:
-        Exception if the request fails
-
-`color_handler(color: str)`
-
-**Converts a color name to its corresponding color code used by the T6 server**
-
-    Parameters:
-        color (str): The color name (e.g., "red", "green")
-
-    Returns:
-        (str): The color code for the specified color, or an empty string if the color is unknown
-
-`read_chat()`
-
-**Retrieves chat messages from the server**
-
-    Returns:
-        (list): A list of tuples, each containing the sender's name and their message
-
-`recent_clients(offset: int = 0)`
-
-**Retrieves a list of recent clients.**
-
-    Parameters:
-        offset (int, optional): The offset for pagination (default is 0)
-
-    Returns:
-        (list): A list of dictionaries containing details about recent clients.
-
-```find_player(name: str = "", xuid: str = "", count: int = 1, offset: int = 0, direction: int = 0)```
-
-**Finds players on the server by name or XUID**
-
-    Parameters:
-        name (str, optional): The player's name
-        xuid (str, optional): The player's XUID
-        count (int, optional): Number of players to return (default is 1)
-        offset (int, optional): Offset for pagination (default is 0)
-        direction (int, optional): Search direction (default is 0)
-
-    Returns:
-        (str): The response from the server containing player information
-
-`get_players()`
-
-**Retrieves a list of players currently connected to the server**
-
-    Returns:
-        (list): A list of tuples, each containing a player's name and their link
+<div align="center">
+    <h1 style="font-size: 2.7rem; font-weight: 800;">
+        <span style="color: #82C8F5;">
+            IW4M
+        </span>
+        -
+        <span style="color: #82C8F5;">
+            Admin
+        </span> 
+        <span style="color: #82C8F5;">
+            Wrapper
+        </span> 
+        🎮
+    </h1>
+    <p style="font-size: 1.25rem; font-weight: 500; margin-bottom: -0.7rem">An <span style="color: #82C8F5;">easy</span>-to-<span style="color: #82C8F5;">use</span> Python wrapper for interacting with the IW4M-Admin</p>
+</div>
 
 
-`get_roles()`
+## <h1 style="font-weight: 800; font-size:2.5rem; border: solid transparent; margin-bottom: 1rem;">Intro<span style="color: #82C8F5;">duction</span></h1>
 
-**Retrieves a list of available roles on the server**
-
-    Returns: A list of roles available
-
-`get_admins(role: str = "all", count: int = None)`
-
-**Retrieves a list of administrators based on their role**
-
-    Parameters:
-        role (str): The role to filter by (default is "all")
-        count (int, optional): The number of admins to return (default is unlimited)
-
-    Returns: A list of dictionaries containing details about the administrators
+<p style="font-size: 1.1rem;">Welcome to <strong>the official wiki</strong> for the <em>IW4M-Admin Wrapper</em>! This wrapper allows you to <strong>easily interact with the IW4M-Admin server</strong> through a simple Python interface. Whether you're  server staff or a developer, this wrapper will simplify your interactions with IW4M-Admin, enabling you to manage players, retrieve statistics, and much more 📊</p>
 
 ---
 
-## Player Class 👾
-The `Player` class provides methods for retrieving and managing player information
+<div align="center">
+    <h1 style="margin-bottom: -1.5rem; border: solid transparent; font-weight: 800; font-size: 3rem;">Table of Contents</h1>
+</div>
 
-### Methods
-`stats(client_id: str)`
+<div style="display: flex; gap: 1rem; padding: 20px; border: solid transparent; flex-wrap: wrap;">
+    <!-- Server Class Section -->
+    <div style="flex: 1; border: 0.15rem solid #82C8F5; border-radius: 10px; padding: 15px;">
+        <h2 style="font-size: 2.5rem; font-weight: 700;">
+            <a href="#server-class" style="text-decoration: none; color: white;">
+                Server <span style="color: #82C8F5;">Class</span> 🎮
+            </a>
+        </h2>
+        <ul style="list-style: none; padding: 0; line-height: 1.8;">
+            <li><a href="#status" style="color: #91C1E6; font-size: 1.1rem;">status()</a></li>
+            <li><a href="#info" style="color: #91C1E6;">info()</a></li>
+            <li><a href="#get_server_ids" style="color: #91C1E6;">get_server_ids()</a></li>
+            <li><a href="#send_command" style="color: #91C1E6;">send_command()</a></li>
+            <li><a href="#read_chat" style="color: #91C1E6;">read_chat()</a></li>
+            <li><a href="#recent_clients" style="color: #91C1E6;">recent_clients()</a></li>
+            <li><a href="#find_player" style="color: #91C1E6;">find_player()</a></li>
+            <li><a href="#get_users" style="color: #91C1E6;">get_users()</a></li>
+            <li><a href="#get_players" style="color: #91C1E6;">get_players()</a></li>
+            <li><a href="#get_roles" style="color: #91C1E6;">get_roles()</a></li>
+            <li><a href="#get_admins" style="color: #91C1E6;">get_admins()</a></li>
+            <li><a href="#get_audit_logs" style="color: #91C1E6;">get_audit_logs()</a></li>
+            <li><a href="#get_client_penalties" style="color: #91C1E6;">get_client_penalties()</a></li>
+            <li><a href="#get_top_players" style="color: #91C1E6;">get_top_players()</a></li>
+        </ul>
+    </div>
+    <!-- Player Class Section -->
+    <div style="flex: 1; border: 0.15rem solid #82C8F5; border-radius: 10px; padding: 15px; background-color: transparent;">
+        <h2 style="font-size: 2.5rem; font-weight: 700;">
+            <a href="#player-class" style="text-decoration: none; color: white;">
+                Player <span style="color: #82C8F5;">Class</span>👾
+            </a>
+        </h2>
+        <ul style="list-style: none; padding: 0; line-height: 1.8;">
+            <li><a href="#stats" style="color: #91C1E6; font-size: 1.1rem;">stats()</a></li>
+            <li><a href="#advanced_stats" style="color: #91C1E6; font-size: 1.1rem;">advanced_stats()</a></li>
+            <li><a href="#client_info" style="color: #91C1E6; font-size: 1.1rem;">client_info()</a></li>
+            <li><a href="#info" style="color: #91C1E6; font-size: 1.1rem;">info()</a></li>
+            <li><a href="#chat_history" style="color: #91C1E6; font-size: 1.1rem;">chat_history()</a></li>
+            <li><a href="#name_changes" style="color: #91C1E6; font-size: 1.1rem;">name_changes()</a></li>
+            <li><a href="#administered_penalties" style="color: #91C1E6; font-size: 1.1rem;">administered_penalties()</a></li>
+            <li><a href="#received_penalties" style="color: #91C1E6; font-size: 1.1rem;">received_penalties()</a></li>
+            <li><a href="#connection_history" style="color: #91C1E6; font-size: 1.1rem;">connection_history()</a></li>
+            <li><a href="#permissions" style="color: #91C1E6; font-size: 1.1rem;">permissions()</a></li>
+        </ul>
+    </div>
+</div>
 
-**Fetches the statistics for a specific player**
+<div align="center" id="server-class">
+    <h1 style="padding-top: 5rem; padding-bottom: 0.2rem; font-weight: 800; font-size: 3rem;">Server Class 💻</h1>
+    <p style="font-size: 1.2rem; color: white;">The Server class provides utility functions for interacting with the IW4M-Admin servers</p>
+</div>
 
-    Parameters:
-        client_id (str): The client ID of the player
+<div style="display: flex; gap: 1rem; padding: 20px; border: solid transparent; flex-wrap: wrap;">
+    <div style="flex: 1; border: 0.15rem solid #82C8F5; border-radius: 10px; padding: 1rem; padding-left: 1.5rem;">
+        <h2 style="font-size: 2.5rem; font-weight: 700;">Methods</h2>
+        <ul style="list-style: none; padding: 0; line-height: 1.8;">
+            <li style="border-bottom: 1px solid #82C8F5; padding-bottom: 10px; margin-bottom: 10px;" id="status">
+                <strong><code style="font-size: 1.2rem;">status()</code></strong><br>
+                <span style="font-size: 1rem; font-weight: 500; color: white">Retrieves the current status of the server</span>
+                <ul style="margin-top: 5px; padding-left: 1.2rem;">
+                    <li><strong>Returns:</strong> <code>(dict)</code> - The status information from the server in JSON format.</li>
+                </ul>
+            </li>
+            <li style="border-bottom: 1px solid #82C8F5; padding-bottom: 10px; margin-bottom: 10px;" id="info">
+                <strong><code>info()</code></strong><br>
+                <span style="font-size: 1rem; font-weight: 500; color: white">Retrieves the server information.</span>
+                <ul style="margin-top: 5px; padding-left: 1.2rem;">
+                    <li><strong>Returns:</strong> <code>(dict)</code> - Information about the server in JSON format.</li>
+                </ul>
+            </li>
+            <li style="border-bottom: 1px solid #82C8F5; padding-bottom: 10px; margin-bottom: 10px;" id="get_server_ids">
+                <strong><code>get_server_ids()</code></strong><br>
+                <span style="font-size: 1rem; font-weight: 500; color: white">Retrieves a list of available servers and their corresponding IDs.</span>
+                <ul style="margin-top: 5px; padding-left: 1.2rem;">
+                    <li><strong>Returns:</strong> <code>(list)</code> - A list of dictionaries, each containing:
+                        <ul>
+                            <li>server (str): The name of the server</li>
+                            <li>id (str): The unique identifier for the server</li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li style="border-bottom: 1px solid #82C8F5; padding-bottom: 10px; margin-bottom: 10px;" id="send_command">
+                <strong><code>send_command(command: str)</code></strong><br>
+                <span style="font-size: 1rem; font-weight: 500; color: white">Executes an iw4m-admin console command and returns the response.</span>
+                <ul style="margin-top: 5px; padding-left: 1.2rem;">
+                    <li><strong>Parameters:</strong> <code>command (str)</code> - The command to execute.</li>
+                    <li><strong>Returns:</strong> <code>(str)</code> - Response from the server.</li>
+                    <li><strong>Raises:</strong> Exception if the request fails.</li>
+                </ul>
+            </li>
+            <li style="border-bottom: 1px solid #82C8F5; padding-bottom: 10px; margin-bottom: 10px;" id="read_chat">
+                <strong><code>read_chat()</code></strong><br>
+                <span style="font-size: 1rem; color: white;">Retrieves chat messages from the server.</span>
+                <ul style="margin-top: 5px; padding-left: 1.2rem;">
+                    <li><strong>Returns:</strong> <code>(list)</code> - A list of tuples, each containing the sender's name and their message.</li>
+                </ul>
+            </li>
+            <li style="border-bottom: 1px solid #82C8F5; padding-bottom: 10px; margin-bottom: 10px;" id="recent_clients">
+                <strong><code>recent_clients(offset: int = 0)</code></strong><br>
+                <span style="font-size: 1rem; color: white;">Retrieves a list of recent clients.</span>
+                <ul style="margin-top: 5px; padding-left: 1.2rem;">
+                    <li><strong>Parameters:</strong> <code>offset (int, optional)</code> - The offset for pagination (default is 0).</li>
+                    <li><strong>Returns:</strong> <code>(list)</code> - A list of dictionaries containing details about recent clients.</li>
+                </ul>
+            </li>
+            <li style="border-bottom: 1px solid #82C8F5; padding-bottom: 10px; margin-bottom: 10px;" id="find_player">
+                <strong><code>find_player(name: str = "", xuid: str = "", count: int = 1, offset: int = 0, direction: int = 0)</code></strong><br>
+                <span style="font-size: 1rem; color: white;">Finds players on the server by name or XUID.</span>
+                <ul style="margin-top: 5px; padding-left: 1.2rem;">
+                    <li><strong>Parameters:</strong> 
+                        <ul>
+                            <li><code>name (str, optional)</code>: The player's name</li>
+                            <li><code>xuid (str, optional)</code>: The player's XUID</li>
+                            <li><code>count (int, optional)</code>: Number of players to return (default is 1)</li>
+                            <li><code>offset (int, optional)</code>: Offset for pagination (default is 0)</li>
+                            <li><code>direction (int, optional)</code>: Search direction (default is 0)</li>
+                        </ul>
+                    </li>
+                    <li><strong>Returns:</strong> <code>(str)</code> - The response from the server containing player information.</li>
+                </ul>
+            </li>
+            <li style="border-bottom: 1px solid #82C8F5; padding-bottom: 10px; margin-bottom: 10px;" id="get_users">
+                <strong><code>get_users()</code></strong><br>
+                <span style="font-size: 1rem; color: white;">Retrieves a list of users with their corresponding links.</span>
+                <ul style="margin-top: 5px; padding-left: 1.2rem;">
+                    <li><strong>Returns:</strong> <code>(list)</code> - A list of tuples, each containing:
+                        <ul>
+                            <li>player (str): The name of the user</li>
+                            <li>href (str): The corresponding link of the user</li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li style="border-bottom: 1px solid #82C8F5; padding-bottom: 10px; margin-bottom: 10px;" id="get_players">
+                <strong><code>get_players()</code></strong><br>
+                <span style="font-size: 1rem; color: white;">Retrieves a list of players with their roles and corresponding links.</span>
+                <ul style="margin-top: 5px; padding-left: 1.2rem;">
+                    <li><strong>Returns:</strong> <code>(list)</code> - A list of dictionaries, each containing:
+                        <ul>
+                            <li>role (str): The role of the player (e.g., owner, senior, admin, user)</li>
+                            <li>name (str): The name of the player</li>
+                            <li>url (str): The corresponding link to the player</li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li style="border-bottom: 1px solid #82C8F5; padding-bottom: 10px; margin-bottom: 10px;" id="get_roles">
+                <strong><code>get_roles()</code></strong><br>
+                <span style="font-size: 1rem; color: white;">Retrieves a list of available roles on the server.</span>
+                <ul style="margin-top: 5px; padding-left: 1.2rem;">
+                    <li><strong>Returns:</strong> A list of roles available.</li>
+                </ul>
+            </li>
+            <li style="border-bottom: 1px solid #82C8F5; padding-bottom: 10px; margin-bottom: 10px;" id="get_admins">
+                <strong><code>get_admins(role: str = "all", count: int = None)</code></strong><br>
+                <span style="font-size: 1rem; color: white;">Retrieves a list of administrators based on their role.</span>
+                <ul style="margin-top: 5px; padding-left: 1.2rem;">
+                    <li><strong>Parameters:</strong>
+                        <ul>
+                            <li><code>role (str)</code>: The role to filter by (default is "all")</li>
+                            <li><code>count (int, optional)</code>: The number of admins to return (default is unlimited)</li>
+                        </ul>
+                    </li>
+                    <li><strong>Returns:</strong> A list of dictionaries containing details about the administrators.</li>
+                </ul>
+            </li>
+            <li style="border-bottom: 1px solid #82C8F5; padding-bottom: 10px; margin-bottom: 10px;" id="get_audit_logs">
+                <strong><code>get_audit_logs()</code></strong><br>
+                <span style="font-size: 1rem; color: white;">Retrieves a list of audit logs from the server.</span>
+                <ul style="margin-top: 5px; padding-left: 1.2rem;">
+                    <li><strong>Returns:</strong> A list of dictionaries containing:
+                        <ul>
+                            <li>type (str): The type of the audit log entry</li>
+                            <li>origin (str): The origin of the log</li>
+                            <li>href (str): The link to the log</li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</div>
 
-    Returns:
-        (str): The response from the server containing player statistics
-
-`info(client_id: str)`
-
-**Retrieves detailed information about a player**
-
-    Parameters:
-        client_id (str): The client ID of the player
-
-    Returns:
-        (dict): A dictionary containing the player's name, GUID, IP address, and statistics
-
-`chat_history(client_id: str, count: int)`
-
-**Fetches the chat history for a specified client id**
-
-    Parameters:
-        client_id (str): The player's client_id 
-        count (int): The number of messages to retrieve
-
-    Returns:
-        (list): A list of chat messages sent by the player
- 
-`advanced_stats(client_id: str)`
-
-**Retrieves advanced statistics for a specified player.**
-
-    Parameters:
-        client_id (str): The client ID of the player
-
-    Returns:
-        (dict): A dictionary containing advanced statistics, including player stats, hit locations, and weapon usage.
-
-`recent_clients(offset: int = 0)`
-
-**Retrieves a list of recent clients.**
-
-    Parameters:
-        offset (int, optional): The offset for pagination (default is 0)
-
-    Returns:
-        (list): A list of dictionaries containing details about recent clients.
-
-`name_changes(client_id: str)`
-
-**Retrieves the name changes for a specified client id**
-
-    Parameters:
-        client_id (str): The player's client_id 
-
-    Returns:
-        (list): A list of tuples containing the old username, IP address, and date of change
-
-`administered_penalties(client_id: int, count: int = 30)`
-
-**Retrieves penalties administered to players**
-
-    Parameters:
-        client_id (int): The client ID of the player
-        count (int, optional): The number of penalties to return (default is 30)
-    
-    Returns:
-        (list): A list of dictionaries containing details about the administered penalties
-
-`received_penalties(client_id: int, count: int = 30)`
-
-**Retrieves penalties received by the player**
-
-    Parameters:
-        client_id (int): The client ID of the player
-        count (int, optional): The number of penalties to return (default is 30)
-    
-    Returns:
-        (list): A list of dictionaries containing details about the received penalties
-
-`connection_history(client_id: int, count: int = 30)`
-
-**Fetches the connection history for a specified player**
-
-    Parameters:
-        client_id (int): The client ID of the player
-        count (int, optional): The number of connection entries to return (default is 30)
-    
-    Returns:
-        (list): A list of dictionaries containing connection history details
-
-`permissions(client_id: int, count: int = 30)`
-
-**Retrieves the permission levels for a specified player**
-
-    Parameters:
-        client_id (int): The client ID of the player
-        count (int, optional): The number of permission entries to return (default is 30)
-    
-    Returns:
-        (list): A list of dictionaries containing permission change details
+<div align="center" id="player-class">
+    <h1 style="padding-top: 5rem; padding-bottom: 0.2rem; font-weight: 800; font-size: 3rem;">Player Class 👾</h1>
+    <p style="font-size: 1.2rem; color: white;">The Player class provides utility functions for interacting with players on the IW4M-Admin server</p>
+</div>
 
 
----
+<div style="display: flex; gap: 1rem; padding: 20px; border: solid transparent; flex-wrap: wrap;">
+    <div style="flex: 1; border: 0.15rem solid #82C8F5; border-radius: 10px; padding: 1rem; padding-left: 1.5rem;">
+        <h2 style="font-size: 2.5rem; font-weight: 700;">Methods</h2>
+        <ul style="list-style: none; padding: 0; line-height: 1.8;">
+            <li style="border-bottom: 1px solid #82C8F5; padding-bottom: 10px; margin-bottom: 10px;" id="stats">
+                <strong><code style="font-size: 1rem; color: white;">stats()</code></strong><br>
+                <span style="font-size: 1rem; font-weight: 500; color: white">Retrieves statistics about the player.</span>
+                <ul style="margin-top: 5px; padding-left: 1.2rem;">
+                    <li><strong>Returns:</strong> <code>(dict)</code> - Player statistics in JSON format.</li>
+                </ul>
+            </li> 
+            <li style="border-bottom: 1px solid #82C8F5; padding-bottom: 10px; margin-bottom: 10px;" id="advanced_stats">
+                <strong><code style="font-size: 1rem; color: white;">advanced_stats()</code></strong><br>
+                <span style="font-size: 1rem; font-weight: 500; color: white">Retrieves advanced statistics for the player.</span>
+                <ul style="margin-top: 5px; padding-left: 1.2rem;">
+                    <li><strong>Returns:</strong> <code>(dict)</code> - Advanced player statistics in JSON format.</li>
+                </ul>
+            </li>
+            <li style="border-bottom: 1px solid #82C8F5; padding-bottom: 10px; margin-bottom: 10px;" id="client_info">
+                <strong><code style="font-size: 1rem; color: white;">client_info()</code></strong><br>
+                <span style="font-size: 1rem; font-weight: 500; color: white">Retrieves the client's information.</span>
+                <ul style="margin-top: 5px; padding-left: 1.2rem;">
+                    <li><strong>Returns:</strong> <code>(dict)</code> - Client information in JSON format.</li>
+                </ul>
+            </li>
+            <li style="border-bottom: 1px solid #82C8F5; padding-bottom: 10px; margin-bottom: 10px;" id="info">
+                <strong><code style="font-size: 1rem; color: white;">info()</code></strong><br>
+                <span style="font-size: 1rem; font-weight: 500; color: white">Retrieves the basic information about the player.</span>
+                <ul style="margin-top: 5px; padding-left: 1.2rem;">
+                    <li><strong>Returns:</strong> <code>(dict)</code> - Player information in JSON format.</li>
+                </ul>
+            </li>
+            <li style="border-bottom: 1px solid #82C8F5; padding-bottom: 10px; margin-bottom: 10px;" id="chat_history">
+                <strong><code style="font-size: 1rem; color: white;">chat_history()</code></strong><br>
+                <span style="font-size: 1rem; font-weight: 500; color: white">Retrieves the player's chat history.</span>
+                <ul style="margin-top: 5px; padding-left: 1.2rem;">
+                    <li><strong>Returns:</strong> <code>(list)</code> - A list of chat messages sent by the player.</li>
+                </ul>
+            </li>
+            <li style="border-bottom: 1px solid #82C8F5; padding-bottom: 10px; margin-bottom: 10px;" id="name_changes">
+                <strong><code style="font-size: 1rem; color: white;">name_changes()</code></strong><br>
+                <span style="font-size: 1rem; font-weight: 500; color: white">Retrieves the history of the player's name changes.</span>
+                <ul style="margin-top: 5px; padding-left: 1.2rem;">
+                    <li><strong>Returns:</strong> <code>(list)</code> - A list of previous names.</li>
+                </ul>
+            </li>
+            <li style="border-bottom: 1px solid #82C8F5; padding-bottom: 10px; margin-bottom: 10px;" id="administered_penalties">
+                <strong><code style="font-size: 1rem; color: white;">administered_penalties()</code></strong><br>
+                <span style="font-size: 1rem; font-weight: 500; color: white">Retrieves the penalties administered to the player.</span>
+                <ul style="margin-top: 5px; padding-left: 1.2rem;">
+                    <li><strong>Returns:</strong> <code>(list)</code> - A list of administered penalties.</li>
+                </ul>
+            </li>
+            <li style="border-bottom: 1px solid #82C8F5; padding-bottom: 10px; margin-bottom: 10px;" id="received_penalties">
+                <strong><code style="font-size: 1rem; color: white;">received_penalties()</code></strong><br>
+                <span style="font-size: 1rem; font-weight: 500; color: white">Retrieves the penalties the player has received.</span>
+                <ul style="margin-top: 5px; padding-left: 1.2rem;">
+                    <li><strong>Returns:</strong> <code>(list)</code> - A list of received penalties.</li>
+                </ul>
+            </li>
+            <li style="border-bottom: 1px solid #82C8F5; padding-bottom: 10px; margin-bottom: 10px;" id="connection_history">
+                <strong><code style="font-size: 1rem; color: white;">connection_history()</code></strong><br>
+                <span style="font-size: 1rem; font-weight: 500; color: white">Retrieves the player's connection history to the server.</span>
+                <ul style="margin-top: 5px; padding-left: 1.2rem;">
+                    <li><strong>Returns:</strong> <code>(list)</code> - A list of connection events.</li>
+                </ul>
+            </li>
+            <li style="border-bottom: 1px solid #82C8F5; padding-bottom: 10px; margin-bottom: 10px;" id="permissions">
+                <strong><code style="font-size: 1rem; color: white;">permissions()</code></strong><br>
+                <span style="font-size: 1rem; font-weight: 500; color: white">Retrieves the permissions assigned to the player.</span>
+                <ul style="margin-top: 5px; padding-left: 1.2rem;">
+                    <li><strong>Returns:</strong> <code>(list)</code> - A list of permissions.</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</div>
 
-## Come Play on Brownies SND 🍰
+<div style="padding-bottom: 2.5rem;"></div>
+
+<h1>Come Play on Brownies SND 🍰</h1>
 ### Why Brownies? 🤔
 - **Stability:** Brownies delivers a consistent, lag-free experience, making it the perfect choice for players who demand uninterrupted action
 - **Community:** The players at Brownies are known for being helpful, competitive, and fun—something Orion can only dream of
@@ -318,3 +395,4 @@ The `Player` class provides methods for retrieving and managing player informati
 ---
 
 #### [Brownies Discord](https://discord.gg/FAHB3mwrVF) | [Brownies IW4M](http://152.53.132.41:1624/) | Made With ❤️ By Budiworld
+
