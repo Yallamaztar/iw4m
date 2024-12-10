@@ -249,7 +249,51 @@ class IW4MWrapper():
                 audit_logs.append(audit_log)
             
             return audit_logs
+        
+        def get_client_penalties(self, penalty_type: int = 7, hide_automated_penalties: bool = False, count: int = None):
+            client_penalties = []   
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/Penalty/List?showOnly={penalty_type}&hideAutomatedPenalties={hide_automated_penalties}")
+            soup = bs(response.text, 'html.parser')
 
+            entries = soup.find_all('tr', class_='d-none d-lg-table-row')
+
+            for entry in entries:
+                player_name_tag = entry.find('a', class_='level-color-flagged')
+                admin_name_tag = entry.find('a', class_='level-color-administrator')
+                penalty = entry.find('td', class_='penalties-color-kick')
+                reason = entry.find_all('colorcode')[0].text if entry.find_all('colorcode') else None
+                admin = admin_name_tag.find('colorcode').text if admin_name_tag else None
+                penalty_time = entry.find('span').text if entry.find('span') else None
+
+                roles = {
+                    "owner": entry.find('a', class_="level-color-owner"),
+                    "senioradmin": entry.find('a', class_="level-color-senioradmin"),
+                    "admin": entry.find('a', class_="level-color-administrator"),
+                    "trusted": entry.find('a', class_="level-color-trusted"),
+                    "user": entry.find('a', class_="level-color-user"),
+                    "flagged": entry.find('a', class_="level-color-flagged"),
+                    "banned": entry.find('a', class_="level-color-banned")
+                }
+
+                present_roles = [role for role, tag in roles.items() if tag]
+
+                player_name = player_name_tag.get_text(strip=True) if player_name_tag else 'Unknown Player'
+                admin_name = admin_name_tag.get_text(strip=True) if admin_name_tag else 'Unknown Admin'
+
+                client_penalties.append({
+                    'player_name': player_name,
+                    'penalty': penalty.get_text(strip=True) if penalty else 'None',
+                    'reason': reason,
+                    'admin': admin,
+                    'penalty_time': penalty_time,
+                    'roles': present_roles 
+                })
+
+                if count and len(client_penalties) >= count:
+                    break
+
+            return client_penalties
+                
         def get_admins(self, role: str = "all", count: int = None):
             admins = []
 
@@ -1068,20 +1112,20 @@ class AsyncIW4MWrapper():
 
             async with aiohttp.ClientSession() as session:
                 async with session.get(
-                    f"{self.wrapper.base_url}/Client/Privileged",
+                    f'{self.wrapper.base_url}/Action/editForm/?id=982&meta=""',
                     headers={"Cookie": self.wrapper.cookie}
                 ) as response:
                     
                     response_text = await response.text()
                     soup = bs(response_text, 'html.parser')
 
-                    entries = soup.find_all('table', class_="table mb-20")
-                    for entry in entries:
-                        header = entry.find('thead').find('tr').find_all('th')
-                        role = header[0].text
-
-                        roles.append({'role': role})
-            
+                    select = soup.find('select', {'name': 'level'})
+                    if select:
+                        options = select.find_all('option')
+                        for option in options:
+                            role = option.get('value')
+                            if role: 
+                                roles.append(role)
             return roles
         
         async def recent_clients(self, offset: int = 0):
@@ -1115,6 +1159,89 @@ class AsyncIW4MWrapper():
                             recent_clients.append(client_data)
                     
             return recent_clients
+        
+        async def get_audit_logs(self):
+            audit_logs = []
+
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    f"{self.wrapper.base_url}/Admin/AuditLog",
+                    headers={"Cookie": self.wrapper.cookie}
+                    ) as response:
+
+                        response_text = await response.text()
+                        soup = bs(response_text, 'html.parser')
+
+                        tbody = soup.find('tbody', id='audit_log_table_body')
+                        if not tbody:
+                            return audit_logs
+
+                        trs = tbody.find_all('tr', class_='d-none d-lg-table-row bg-dark-dm bg-light-lm')
+                        for tr in trs:
+                            columns = tr.find_all('td')
+
+                            audit_log = {
+                                'type': columns[0].text.strip(),
+                                'origin': columns[1].find('a').text.strip(),
+                                'href': columns[1].find('a').get('href').strip(),
+                                'target': columns[2].find('a').text.strip() if columns[2].find('a') else columns[2].text.strip(),
+                                'data': columns[4].text.strip(),
+                                'time': columns[5].text.strip()
+                            }
+
+                            audit_logs.append(audit_log)
+            
+            return audit_logs
+        
+        async def get_client_penalties(self, penalty_type: int = 7, hide_automated_penalties: bool = False, count: int = None):
+            client_penalties = [] 
+
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    f"{self.wrapper.base_url}/Penalty/List?showOnly={penalty_type}&hideAutomatedPenalties={hide_automated_penalties}",
+                    headers={"Cookie": self.wrapper.cookie}
+                ) as response:
+
+                    response_text = await response.text()
+                    soup = bs(response_text, 'html.parser')
+
+                    entries = soup.find_all('tr', class_='d-none d-lg-table-row')
+                    for entry in entries:
+                        player_name_tag = entry.find('a', class_='level-color-flagged')
+                        admin_name_tag = entry.find('a', class_='level-color-administrator')
+                        penalty = entry.find('td', class_='penalties-color-kick')
+                        reason = entry.find_all('colorcode')[0].text if entry.find_all('colorcode') else None
+                        admin = admin_name_tag.find('colorcode').text if admin_name_tag else None
+                        penalty_time = entry.find('span').text if entry.find('span') else None
+
+                        roles = {
+                            "owner": entry.find('a', class_="level-color-owner"),
+                            "senioradmin": entry.find('a', class_="level-color-senioradmin"),
+                            "admin": entry.find('a', class_="level-color-administrator"),
+                            "trusted": entry.find('a', class_="level-color-trusted"),
+                            "user": entry.find('a', class_="level-color-user"),
+                            "flagged": entry.find('a', class_="level-color-flagged"),
+                            "banned": entry.find('a', class_="level-color-banned")
+                        }
+
+                        present_roles = [role for role, tag in roles.items() if tag]
+
+                        player_name = player_name_tag.get_text(strip=True) if player_name_tag else 'Unknown Player'
+                        admin_name = admin_name_tag.get_text(strip=True) if admin_name_tag else 'Unknown Admin'
+
+                        client_penalties.append({
+                            'player_name': player_name,
+                            'penalty': penalty.get_text(strip=True) if penalty else 'None',
+                            'reason': reason,
+                            'admin': admin,
+                            'penalty_time': penalty_time,
+                            'roles': present_roles 
+                        })
+
+                        if count and len(client_penalties) >= count:
+                            break
+
+                    return client_penalties
 
         async def get_admins(self, role: str = "all", count: int = None):
             admins = []
@@ -1146,7 +1273,7 @@ class AsyncIW4MWrapper():
                                     'name': name,
                                     'role': _role,
                                     'game': game,
-                                'last_connected': last_connected
+                                    'last_connected': last_connected
                                 })
 
                                 if count is not None and len(admins) >= count:
