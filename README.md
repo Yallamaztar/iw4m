@@ -1,7 +1,7 @@
-![http://152.53.132.41:1624](https://files.oaiusercontent.com/file-H9NcrwXUEUXJB4GMeaBseM?se=2024-12-10T08%3A25%3A59Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D604800%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3D1c0b305a-43d6-4160-bf38-56c221bc2c7e.webp&sig=5S4iSXttKAyvEKs1LrmmKg7emkjiK39xjZ0LashQA6k%3D)
+![http://152.53.132.41:1624](./brownie.png)
 hop on brownies :)
 
-<div style="padding-bottom: 1.5rem;"></div>
+<div style="margin-top: -0.5rem;"></div>
 
 <div align="center">
     <h1 style="font-size: 2.7rem; font-weight: 800;">
@@ -21,9 +21,9 @@ hop on brownies :)
 </div>
 
 
-## <h1 style="font-weight: 800; font-size:2.5rem; border: solid transparent; margin-bottom: 1rem;">Intro<span style="color: #82C8F5;">duction</span></h1>
+## <h1 style="font-weight: 800; font-size:2.5rem; border: solid transparent; margin-bottom: 0.2rem;">Intro<span style="color: #82C8F5;">duction</span></h1>
 
-<p style="font-size: 1.1rem;">Welcome to <strong>the official wiki</strong> for the <em>IW4M-Admin Wrapper</em>! This wrapper allows you to <strong>easily interact with the IW4M-Admin server</strong> through a simple Python interface. Whether you're  server staff or a developer, this wrapper will simplify your interactions with IW4M-Admin, enabling you to manage players, retrieve statistics, and much more 📊</p>
+<p style="font-size: 1.25rem;">Welcome to <strong>the official wiki</strong> for the <em>IW4M-Admin Wrapper</em>! This wrapper allows you to <strong>easily interact with the IW4M-Admin server</strong> through simple Python Functions. Whether you're server staff or a developer, this wrapper will simplify your interactions with IW4M-Admin, enabling you to manage players, retrieve statistics, and much more 📊</p>
 
 ---
 
@@ -78,90 +78,7 @@ hop on brownies :)
     </div>
 </div>
 
-<div align="center" id="server-class">
-    <h1 style="padding-top: 5rem; padding-bottom: 0.2rem; font-weight: 800; font-size: 3rem;">Server Class 💻</h1>
-    <p style="font-size: 1.2rem; color: #white;">The Server class provides utility functions for interacting with the IW4M-Admin servers</p>
-</div>
 
-![http://152.53.132.41:1624](https://files.oaiusercontent.com/file-H9NcrwXUEUXJB4GMeaBseM?se=2024-12-10T08%3A25%3A59Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D604800%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3D1c0b305a-43d6-4160-bf38-56c221bc2c7e.webp&sig=5S4iSXttKAyvEKs1LrmmKg7emkjiK39xjZ0LashQA6k%3D)
-hop on brownies :)
-
-<div style="padding-bottom: 1.5rem;"></div>
-
-<div align="center">
-    <h1 style="font-size: 2.7rem; font-weight: 800;">
-        <span style="color: #82C8F5;">
-            IW4M
-        </span>
-        -
-        <span style="color: #82C8F5;">
-            Admin
-        </span> 
-        <span style="color: #82C8F5;">
-            Wrapper
-        </span> 
-        🎮
-    </h1>
-    <p style="font-size: 1.25rem; font-weight: 500; margin-bottom: -0.7rem">An <span style="color: #82C8F5;">easy</span>-to-<span style="color: #82C8F5;">use</span> Python wrapper for interacting with the IW4M-Admin</p>
-</div>
-
-
-## <h1 style="font-weight: 800; font-size:2.5rem; border: solid transparent; margin-bottom: 1rem;">Intro<span style="color: #82C8F5;">duction</span></h1>
-
-<p style="font-size: 1.1rem;">Welcome to <strong>the official wiki</strong> for the <em>IW4M-Admin Wrapper</em>! This wrapper allows you to <strong>easily interact with the IW4M-Admin server</strong> through a simple Python interface. Whether you're  server staff or a developer, this wrapper will simplify your interactions with IW4M-Admin, enabling you to manage players, retrieve statistics, and much more 📊</p>
-
----
-
-<div align="center">
-    <h1 style="margin-bottom: -1.5rem; border: solid transparent; font-weight: 800; font-size: 3rem;">Table of Contents</h1>
-</div>
-
-<div style="display: flex; gap: 1rem; padding: 20px; border: solid transparent; flex-wrap: wrap;">
-    <!-- Server Class Section -->
-    <div style="flex: 1; border: 0.15rem solid #82C8F5; border-radius: 10px; padding: 15px;">
-        <h2 style="font-size: 2.5rem; font-weight: 700;">
-            <a href="#server-class" style="text-decoration: none; color: white;">
-                Server <span style="color: #82C8F5;">Class</span> 🎮
-            </a>
-        </h2>
-        <ul style="list-style: none; padding: 0; line-height: 1.8;">
-            <li><a href="#status" style="color: #91C1E6; font-size: 1.1rem;">status()</a></li>
-            <li><a href="#info" style="color: #91C1E6;">info()</a></li>
-            <li><a href="#get_server_ids" style="color: #91C1E6;">get_server_ids()</a></li>
-            <li><a href="#send_command" style="color: #91C1E6;">send_command()</a></li>
-            <li><a href="#read_chat" style="color: #91C1E6;">read_chat()</a></li>
-            <li><a href="#recent_clients" style="color: #91C1E6;">recent_clients()</a></li>
-            <li><a href="#find_player" style="color: #91C1E6;">find_player()</a></li>
-            <li><a href="#get_users" style="color: #91C1E6;">get_users()</a></li>
-            <li><a href="#get_players" style="color: #91C1E6;">get_players()</a></li>
-            <li><a href="#get_roles" style="color: #91C1E6;">get_roles()</a></li>
-            <li><a href="#get_admins" style="color: #91C1E6;">get_admins()</a></li>
-            <li><a href="#get_audit_logs" style="color: #91C1E6;">get_audit_logs()</a></li>
-            <li><a href="#get_client_penalties" style="color: #91C1E6;">get_client_penalties()</a></li>
-            <li><a href="#get_top_players" style="color: #91C1E6;">get_top_players()</a></li>
-        </ul>
-    </div>
-    <!-- Player Class Section -->
-    <div style="flex: 1; border: 0.15rem solid #82C8F5; border-radius: 10px; padding: 15px; background-color: transparent;">
-        <h2 style="font-size: 2.5rem; font-weight: 700;">
-            <a href="#player-class" style="text-decoration: none; color: white;">
-                Player <span style="color: #82C8F5;">Class</span>👾
-            </a>
-        </h2>
-        <ul style="list-style: none; padding: 0; line-height: 1.8;">
-            <li><a href="#stats" style="color: #91C1E6; font-size: 1.1rem;">stats()</a></li>
-            <li><a href="#advanced_stats" style="color: #91C1E6; font-size: 1.1rem;">advanced_stats()</a></li>
-            <li><a href="#client_info" style="color: #91C1E6; font-size: 1.1rem;">client_info()</a></li>
-            <li><a href="#info" style="color: #91C1E6; font-size: 1.1rem;">info()</a></li>
-            <li><a href="#chat_history" style="color: #91C1E6; font-size: 1.1rem;">chat_history()</a></li>
-            <li><a href="#name_changes" style="color: #91C1E6; font-size: 1.1rem;">name_changes()</a></li>
-            <li><a href="#administered_penalties" style="color: #91C1E6; font-size: 1.1rem;">administered_penalties()</a></li>
-            <li><a href="#received_penalties" style="color: #91C1E6; font-size: 1.1rem;">received_penalties()</a></li>
-            <li><a href="#connection_history" style="color: #91C1E6; font-size: 1.1rem;">connection_history()</a></li>
-            <li><a href="#permissions" style="color: #91C1E6; font-size: 1.1rem;">permissions()</a></li>
-        </ul>
-    </div>
-</div>
 
 <div align="center" id="server-class">
     <h1 style="padding-top: 5rem; padding-bottom: 0.2rem; font-weight: 800; font-size: 3rem;">Server Class 💻</h1>
@@ -301,7 +218,7 @@ hop on brownies :)
 </div>
 
 <div align="center" id="player-class">
-    <h1 style="padding-top: 5rem; padding-bottom: 0.2rem; font-weight: 800; font-size: 3rem;">Player Class 👾</h1>
+    <h1 style="padding-top: 5rem; padding-bottom: 0.2rem; font-weight: 800; font-size: 3rem;">Player Class 🕹️</h1>
     <p style="font-size: 1.2rem; color: white;">The Player class provides utility functions for interacting with players on the IW4M-Admin server</p>
 </div>
 
