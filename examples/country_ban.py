@@ -13,7 +13,7 @@ class CountryBanPlugin:
     def __init__(self):
         self.banned_countries = []
 
-       self.iw4m = IW4MWrapper(
+        self.iw4m = IW4MWrapper(
             base_url=os.environ['IW4M_URL'],
             server_id=os.environ['IW4M_ID'],
             cookie=os.environ['IW4M_HEADER']
