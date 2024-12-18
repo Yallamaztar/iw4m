@@ -4,7 +4,7 @@ from requests import sessions
 import aiohttp
 import re
 
-class IW4MWrapper():
+class IW4MWrapper:
     def __init__(self, base_url: str, server_id: int, cookie: str):
         self.base_url = base_url 
         self.server_id = server_id
@@ -15,11 +15,204 @@ class IW4MWrapper():
         def __init__(self, wrapper):
             self.wrapper = wrapper
 
+        def get_server_uptime(self):
+            return self.wrapper.session.get(f"{self.wrapper.base_url}/Console/Execute?serverId=15253132414984&command=!uptime")
+
+        def generate_login_token(self):
+            return self.wrapper.session.get(f"{self.wrapper.base_url}/Action/GenerateLoginTokenAsync/").text
+
         def status(self):
             return self.wrapper.session.get(f"{self.wrapper.base_url}/api/status").json()
         
         def info(self):
             return self.wrapper.session.get(f"{self.wrapper.base_url}/api/info").json()
+        
+        def help(self):
+            _help = {}
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/Home/Help").text
+            soup = bs(response, 'html.parser')
+            
+            command_list = soup.find('div', class_="command-assembly-container")
+            if command_list:
+                command_title = command_list.find('h2', class_="content-title mb-lg-20 mt-20").text.strip()
+                if command_title not in _help:
+                    _help[command_title] = {}
+
+                commands = command_list.find_all('tr', class_="d-none d-lg-table-row bg-dark-dm bg-light-lm")
+                for command in commands:
+                    name = command.find('td', class_="font-weight-bold").text.strip()
+                    alias = command.find_all('td')[1].text.strip()
+                    description = command.find_all('td')[2].text.strip()
+                    requires_target = command.find_all('td')[3].text.strip()
+                    syntax = command.find_all('td')[4].text.strip()
+                    min_level = command.find('td', class_="text-right").text.strip()
+
+                    _help[command_title][name] = {
+                        "alias": alias,
+                        "description": description,
+                        "requires_target": requires_target,
+                        "syntax": syntax,
+                        "min_level": min_level
+                        }
+            
+            script_plugin = soup.find_all('div', class_="command-assembly-container")[1]
+            if script_plugin:
+                script_title = script_plugin.find('h2', class_="content-title mb-lg-20 mt-20").text.strip()
+                if script_title not in _help:
+                    _help[script_title] = {}
+
+                scripts = script_plugin.find_all('tr', class_="d-none d-lg-table-row bg-dark-dm bg-light-lm")
+                for script in scripts:
+                    name = script.find('td', class_="font-weight-bold").text.strip()
+                    alias = script.find_all('td')[1].text.strip()
+                    description = script.find_all('td')[2].text.strip()
+                    requires_target = script.find_all('td')[3].text.strip()
+                    syntax = script.find_all('td')[4].text.strip()
+                    min_level = script.find('td', class_="text-right").text.strip()
+
+                    _help[script_title][name] = {
+                        "alias": alias,
+                        "description": description,
+                        "requires_target": requires_target,
+                        "syntax": syntax,
+                        "min_level": min_level
+                        }
+            
+            login = soup.find_all('div', class_="command-assembly-container")[2]
+            if login:
+                login_title = login.find('h2', class_="content-title mb-lg-20 mt-20").text.strip()
+                if login_title not in _help:
+                    _help[login_title] = {}
+
+                login_entries = login.find_all('tr', class_="d-none d-lg-table-row bg-dark-dm bg-light-lm")
+                for login_entry in login_entries:
+                    name = login_entry.find('td', class_="font-weight-bold").text.strip()
+                    alias = login_entry.find_all('td')[1].text.strip()
+                    description = login_entry.find_all('td')[2].text.strip()
+                    requires_target = login_entry.find_all('td')[3].text.strip()
+                    syntax = login_entry.find_all('td')[4].text.strip()
+                    min_level = login_entry.find('td', class_="text-right").text.strip()
+
+                    _help[login_title][name] = {
+                        "alias": alias,
+                        "description": description,
+                        "requires_target": requires_target,
+                        "syntax": syntax,
+                        "min_level": min_level
+                        }
+
+            mute = soup.find_all('div', class_="command-assembly-container")[3]
+            if mute:
+                mute_title = mute.find('h2', class_="content-title mb-lg-20 mt-20").text.strip()
+                if mute_title not in _help:
+                    _help[mute_title] = {}
+
+                mute_entries = mute.find_all('tr', class_="d-none d-lg-table-row bg-dark-dm bg-light-lm")
+                for mute_entry in mute_entries:
+                    name = mute_entry.find('td', class_="font-weight-bold").text.strip()
+                    alias = mute_entry.find_all('td')[1].text.strip()
+                    description = mute_entry.find_all('td')[2].text.strip()
+                    requires_target = mute_entry.find_all('td')[3].text.strip()
+                    syntax = mute_entry.find_all('td')[4].text.strip()
+                    min_level = mute_entry.find('td', class_="text-right").text.strip()
+
+                    _help[mute_title][name] = {
+                        "alias": alias,
+                        "description": description,
+                        "requires_target": requires_target,
+                        "syntax": syntax,
+                        "min_level": min_level
+                        }
+
+            simple_stats = soup.find_all('div', class_="command-assembly-container")[4]
+            if simple_stats:
+                simple_stats_title = simple_stats.find('h2', class_="content-title mb-lg-20 mt-20").text.strip()
+                if simple_stats_title not in _help:
+                    _help[simple_stats_title] = {}
+
+                simple_stats_entries = simple_stats.find_all('tr', class_="d-none d-lg-table-row bg-dark-dm bg-light-lm")
+                for simple_stats_entry in simple_stats_entries:
+                    name = simple_stats_entry.find('td', class_="font-weight-bold").text.strip()
+                    alias = simple_stats_entry.find_all('td')[1].text.strip()
+                    description = simple_stats_entry.find_all('td')[2].text.strip()
+                    requires_target = simple_stats_entry.find_all('td')[3].text.strip()
+                    syntax = simple_stats_entry.find_all('td')[4].text.strip()
+                    min_level = simple_stats_entry.find('td', class_="text-right").text.strip()
+
+                    _help[simple_stats_title][name] = {
+                        "alias": alias,
+                        "description": description,
+                        "requires_target": requires_target,
+                        "syntax": syntax,
+                        "min_level": min_level
+                        }
+
+            return _help
+                    
+        def get_iw4m_version(self): 
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/").text
+            soup = bs(response, 'html.parser')
+            
+            entries = soup.find_all('a', class_="sidebar-link")
+            for entry in entries:
+                span = entry.find('span', class_="text-primary")
+                if span:
+                    return span.text.strip()
+        
+        def logged_in_as(self):
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/").text
+            soup = bs(response, 'html.parser')
+
+            div = soup.find('div', class_="sidebar-link font-size-12 font-weight-light")
+            if div:
+                return div.find('colorcode').text.strip()
+        
+        def get_rules(self):
+            rules = []
+
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/About").text
+            soup = bs(response, 'html.parser')
+            
+            card_divs = soup.find_all('div', class_="card m-0 rounded")
+            for card_div in card_divs:
+                h5 = card_div.find('h5', class_="text-primary mt-0 mb-0")
+                if h5:
+                    divs = card_div.find_all('div', class_="rule")
+                    for div in divs:
+                        rules.append(div.text.strip())
+
+            return rules
+
+        def get_reports(self):
+            reports = []
+
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/Action/RecentReportsForm/").text
+            soup = bs(response, 'html.parser')
+
+            report_blocks = soup.find_all('div', class_='rounded bg-very-dark-dm bg-light-ex-lm mt-10 mb-10 p-10')
+            for block in report_blocks:
+                timestamp_tag = block.find('div', class_='font-weight-bold')
+                timestamp = timestamp_tag.text.strip()
+
+            entries = soup.find_all('div', class_="font-size-12")
+            for entry in entries:
+                origin_tag = entry.find('a')
+                origin = origin_tag.text.strip()
+
+                reason_tag = entry.find('span', class_='text-white-dm text-black-lm').find('colorcode')
+                reason = reason_tag.text.strip()
+
+                target_tag = entry.find('span', class_='text-highlight').find('a')
+                target = target_tag.text.strip()
+
+                reports.append({
+                    'origin': origin,
+                    'reason': reason,
+                    'target': target,
+                    'timestamp': timestamp
+                })
+
+            return reports
 
         def get_server_ids(self): 
             server_ids = []
@@ -494,10 +687,18 @@ class IW4MWrapper():
                     info['level'] = 'User'
                 elif 'level-color--1' in level_class:
                     info['level'] = 'Banned'
+                elif 'level-color-1' in level_class:
+                    info['level'] = 'Flagged'
                 elif 'level-color-3' in level_class:
                     info['level'] = 'Administrator'
+                elif 'level-color-4' in level_class:
+                    info['level'] = 'SeniorAdmin'
+                elif 'level-color-5' in level_class:
+                    info['level'] = 'Owner'
+                elif 'level-color-6' in level_class:
+                    info['level'] = 'Creator'
                 else:
-                    info['level'] = 'SeniorOrHigher'
+                    info['level'] = 'User'
 
             vpn_whitelist = soup.find_all('div', class_="btn btn-block")
             if vpn_whitelist:
@@ -900,7 +1101,7 @@ class IW4MWrapper():
             else:
                 return self.game_utils.send_command(f"!x {player}")
 
-class AsyncIW4MWrapper():
+class AsyncIW4MWrapper:
     def __init__(self, base_url: str, server_id: int, cookie: str):
         self.base_url = base_url
         self.server_id = server_id
@@ -925,6 +1126,188 @@ class AsyncIW4MWrapper():
                     headers={"Cookie": self.wrapper.cookie}
                 ) as response:
                     return await response.json()
+                
+        async def help(self):
+            _help = {}
+            
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    f"{self.wrapper.base_url}/Home/Help",
+                    headers={"Cookie": self.wrapper.cookie}
+                ) as response:
+                    
+                    text = await response.text()
+                    soup = bs(text, 'html.parser')
+                    
+                    command_list = soup.find('div', class_="command-assembly-container")
+                    if command_list:
+                        command_title = command_list.find('h2', class_="content-title mb-lg-20 mt-20").text.strip()
+                        if command_title not in _help:
+                            _help[command_title] = {}
+
+                        commands = command_list.find_all('tr', class_="d-none d-lg-table-row bg-dark-dm bg-light-lm")
+                        for command in commands:
+                            name = command.find('td', class_="font-weight-bold").text.strip()
+                            alias = command.find_all('td')[1].text.strip()
+                            description = command.find_all('td')[2].text.strip()
+                            requires_target = command.find_all('td')[3].text.strip()
+                            syntax = command.find_all('td')[4].text.strip()
+                            min_level = command.find('td', class_="text-right").text.strip()
+
+                            _help[command_title][name] = {
+                                "alias": alias,
+                                "description": description,
+                                "requires_target": requires_target,
+                                "syntax": syntax,
+                                "min_level": min_level
+                                }
+            
+                    script_plugin = soup.find_all('div', class_="command-assembly-container")[1]
+                    if script_plugin:
+                        script_title = script_plugin.find('h2', class_="content-title mb-lg-20 mt-20").text.strip()
+                        if script_title not in _help:
+                            _help[script_title] = {}
+
+                        scripts = script_plugin.find_all('tr', class_="d-none d-lg-table-row bg-dark-dm bg-light-lm")
+                        for script in scripts:
+                            name = script.find('td', class_="font-weight-bold").text.strip()
+                            alias = script.find_all('td')[1].text.strip()
+                            description = script.find_all('td')[2].text.strip()
+                            requires_target = script.find_all('td')[3].text.strip()
+                            syntax = script.find_all('td')[4].text.strip()
+                            min_level = script.find('td', class_="text-right").text.strip()
+
+                            _help[script_title][name] = {
+                                "alias": alias,
+                                "description": description,
+                                "requires_target": requires_target,
+                                "syntax": syntax,
+                                "min_level": min_level
+                                }
+            
+                    login = soup.find_all('div', class_="command-assembly-container")[2]
+                    if login:
+                        login_title = login.find('h2', class_="content-title mb-lg-20 mt-20").text.strip()
+                        if login_title not in _help:
+                            _help[login_title] = {}
+
+                        login_entries = login.find_all('tr', class_="d-none d-lg-table-row bg-dark-dm bg-light-lm")
+                        for login_entry in login_entries:
+                            name = login_entry.find('td', class_="font-weight-bold").text.strip()
+                            alias = login_entry.find_all('td')[1].text.strip()
+                            description = login_entry.find_all('td')[2].text.strip()
+                            requires_target = login_entry.find_all('td')[3].text.strip()
+                            syntax = login_entry.find_all('td')[4].text.strip()
+                            min_level = login_entry.find('td', class_="text-right").text.strip()
+
+                            _help[login_title][name] = {
+                                "alias": alias,
+                                "description": description,
+                                "requires_target": requires_target,
+                                "syntax": syntax,
+                                "min_level": min_level
+                                }
+
+                    mute = soup.find_all('div', class_="command-assembly-container")[3]
+                    if mute:
+                        mute_title = mute.find('h2', class_="content-title mb-lg-20 mt-20").text.strip()
+                        if mute_title not in _help:
+                            _help[mute_title] = {}
+
+                        mute_entries = mute.find_all('tr', class_="d-none d-lg-table-row bg-dark-dm bg-light-lm")
+                        for mute_entry in mute_entries:
+                            name = mute_entry.find('td', class_="font-weight-bold").text.strip()
+                            alias = mute_entry.find_all('td')[1].text.strip()
+                            description = mute_entry.find_all('td')[2].text.strip()
+                            requires_target = mute_entry.find_all('td')[3].text.strip()
+                            syntax = mute_entry.find_all('td')[4].text.strip()
+                            min_level = mute_entry.find('td', class_="text-right").text.strip()
+
+                            _help[mute_title][name] = {
+                                "alias": alias,
+                                "description": description,
+                                "requires_target": requires_target,
+                                "syntax": syntax,
+                                "min_level": min_level
+                                }
+
+                    simple_stats = soup.find_all('div', class_="command-assembly-container")[4]
+                    if simple_stats:
+                        simple_stats_title = simple_stats.find('h2', class_="content-title mb-lg-20 mt-20").text.strip()
+                        if simple_stats_title not in _help:
+                            _help[simple_stats_title] = {}
+
+                        simple_stats_entries = simple_stats.find_all('tr', class_="d-none d-lg-table-row bg-dark-dm bg-light-lm")
+                        for simple_stats_entry in simple_stats_entries:
+                            name = simple_stats_entry.find('td', class_="font-weight-bold").text.strip()
+                            alias = simple_stats_entry.find_all('td')[1].text.strip()
+                            description = simple_stats_entry.find_all('td')[2].text.strip()
+                            requires_target = simple_stats_entry.find_all('td')[3].text.strip()
+                            syntax = simple_stats_entry.find_all('td')[4].text.strip()
+                            min_level = simple_stats_entry.find('td', class_="text-right").text.strip()
+
+                            _help[simple_stats_title][name] = {
+                                "alias": alias,
+                                "description": description,
+                                "requires_target": requires_target,
+                                "syntax": syntax,
+                                "min_level": min_level
+                                }
+
+            return _help
+
+        async def get_iw4m_version(self):
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    f"{self.wrapper.base_url}/",
+                    headers={"Cookie": self.wrapper.cookie}
+                ) as response:
+
+                    text = await response.text()
+                    soup = bs(text, 'html.parser')
+
+                    entries = soup.find_all('a', class_="sidebar-link")
+                    for entry in entries:
+                        span = entry.find('span', class_="text-primary")
+                        if span:
+                            return span.text.strip()
+            
+        async def logged_in_as(self):
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    f"{self.wrapper.base_url}/",
+                    headers={"Cookie": self.wrapper.cookie}
+                ) as response:
+
+                    text = await response.text()
+                    soup = bs(text, 'html.parser')
+
+                    div = soup.find('div', class_="sidebar-link font-size-12 font-weight-light")
+                    if div:
+                        colorcode = div.find('colorcode')
+                        return colorcode.text.strip()
+
+        async def get_rules(self):
+            rules = []
+
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    f"{self.wrapper.base_url}/About",
+                    headers={"Cookie": self.wrapper.cookie}
+                ) as response:
+
+                    text = await response.text()
+                    soup = bs(text, 'html.parser')
+
+                    card_divs = soup.find_all('div', class_="card m-0 rounded")
+                    for card_div in card_divs:
+                        h5 = card_div.find('h5', class_="text-primary mt-0 mb-0")
+                        if h5:
+                            divs = card_div.find_all('div', class_="rule")
+                            for div in divs:
+                                rules.append(div.text.strip())
+
+            return rules
 
         async def get_server_ids(self): 
             server_ids = []
@@ -1452,10 +1835,18 @@ class AsyncIW4MWrapper():
                             info['level'] = 'User'
                         elif 'level-color--1' in level_class:
                             info['level'] = 'Banned'
+                        elif 'level-color-1' in level_class:
+                            info['level'] = 'Flagged'
                         elif 'level-color-3' in level_class:
                             info['level'] = 'Administrator'
+                        elif 'level-color-4' in level_class:
+                            info['level'] = 'SeniorAdmin'
+                        elif 'level-color-5' in level_class:
+                            info['level'] = 'Owner'
+                        elif 'level-color-6' in level_class:
+                            info['level'] = 'Creator'
                         else:
-                            info['level'] = 'SeniorOrHigher'
+                            info['level'] = 'User'
                     
                     vpn_whitelist = soup.find_all('div', class_="btn btn-block")
                     if vpn_whitelist:
