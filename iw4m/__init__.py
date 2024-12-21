@@ -366,6 +366,16 @@ class IW4MWrapper:
                         'url': flag.get('href').strip()
                     })
 
+            banned = soup.find_all('a', class_="level-color--1 no-decoration text-truncate ml-5 mr-5")
+            for ban in banned:
+                banned_colorcode = ban.find('colorcode')
+                if banned_colorcode:
+                    players.append({
+                        'role': 'banned',
+                        'name': banned_colorcode.text.strip(),
+                        'url': ban.get('href').strip()
+                    })
+
             return players
         
         def get_roles(self):
