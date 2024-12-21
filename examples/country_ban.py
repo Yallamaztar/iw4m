@@ -61,5 +61,5 @@ class CountryBanPlugin:
 
 if __name__ == '__main__':
     plugin = CountryBanPlugin()
-    plugin.add_banned_country("france")
+    plugin.add_banned_country("The Netherlands")
     plugin.start(interval=3.5)
