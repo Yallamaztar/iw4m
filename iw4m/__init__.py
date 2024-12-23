@@ -266,7 +266,7 @@ class IW4MWrapper:
     
             return chat
         
-        def find_player(self, name: str = "", xuid: str = "", count: int = 1, 
+        def find_player(self, name: str = "", xuid: str = "", count: int = 100, 
                         offset: int = 0, direction: int = 0):
             if not name and not xuid:
                 return None
@@ -283,22 +283,6 @@ class IW4MWrapper:
             ).text
             return response
         
-        def get_users(self):
-            users = []
-            
-            response = self.wrapper.session.get(f"{self.wrapper.base_url}/").text
-            soup = bs(response, 'html.parser')
-            
-            links = soup.find_all('a', class_='text-light-dm text-dark-lm no-decoration text-truncate ml-5 mr-5')
-            for link in links:
-                colorcode = link.find('colorcode')
-                if colorcode:
-                    player = colorcode.text
-                    href   = link.get('href')
-                    users.append((player, href))
-            
-            return users
-        
         def get_players(self):
             players = []
             
@@ -312,6 +296,7 @@ class IW4MWrapper:
                     players.append({
                         'role': 'creator',
                         'name': creator_colorcode.text.strip(),
+                        'xuid': creator.get('href').strip()[16:],
                         'url': creator.get('href').strip()
                     })
 
@@ -322,6 +307,7 @@ class IW4MWrapper:
                     players.append({
                         'role': 'owner',
                         'name': owner_colorcode.text.strip(),
+                        'xuid': owner.get('href').strip()[16:],
                         'url': owner.get('href').strip()
                     })
 
@@ -332,6 +318,7 @@ class IW4MWrapper:
                     players.append({
                         'role': 'senior',
                         'name': senior_colorcode.text.strip(),
+                        'xuid': senior.get('href').strip()[16:],
                         'url': senior.get('href').strip()
                     })
 
@@ -342,6 +329,7 @@ class IW4MWrapper:
                     players.append({
                         'role': 'admin',
                         'name': admin_colorcode.text.strip(),
+                        'xuid': admin.get('href').strip()[16:],
                         'url': admin.get('href').strip()
                     })
     
@@ -353,6 +341,7 @@ class IW4MWrapper:
                     players.append({
                         'role': 'user',
                         'name': colorcode.text.strip(),
+                        'xuid': user.get('href').strip()[16:],
                         'url': user.get('href').strip()
                     })
             
@@ -363,6 +352,7 @@ class IW4MWrapper:
                     players.append({
                         'role': 'flagged',
                         'name': flagged_colorcode.text.strip(),
+                        'xuid': flag.get('href').strip()[16:],
                         'url': flag.get('href').strip()
                     })
 
@@ -373,6 +363,7 @@ class IW4MWrapper:
                     players.append({
                         'role': 'banned',
                         'name': banned_colorcode.text.strip(),
+                        'xuid': ban.get('href').strip()[16:],
                         'url': ban.get('href').strip()
                     })
 
@@ -415,8 +406,7 @@ class IW4MWrapper:
                     if tooltip:
                         country = tooltip.get('data-title')
                         client_data['country'] = country
-
-            
+          
                 ip_address = entry.find('div', class_='align-self-center mr-auto').text.strip()
                 last_seen = entry.find('div', class_='align-self-center text-muted font-size-12').text.strip()
                 client_data['ip_address'] = ip_address
@@ -453,47 +443,18 @@ class IW4MWrapper:
             
             return audit_logs
         
+        
+        # ───────────────── # 
+        #    do fix this    #
+        # ───────────────── # 
         def get_client_penalties(self, penalty_type: int = 7, hide_automated_penalties: bool = False, count: int = None):
             client_penalties = []   
             response = self.wrapper.session.get(f"{self.wrapper.base_url}/Penalty/List?showOnly={penalty_type}&hideAutomatedPenalties={hide_automated_penalties}")
             soup = bs(response.text, 'html.parser')
 
             entries = soup.find_all('tr', class_='d-none d-lg-table-row')
-
             for entry in entries:
-                player_name_tag = entry.find('a', class_='level-color-flagged')
-                admin_name_tag = entry.find('a', class_='level-color-administrator')
-                penalty = entry.find('td', class_='penalties-color-kick')
-                reason = entry.find_all('colorcode')[0].text if entry.find_all('colorcode') else None
-                admin = admin_name_tag.find('colorcode').text if admin_name_tag else None
-                penalty_time = entry.find('span').text if entry.find('span') else None
-
-                roles = {
-                    "owner": entry.find('a', class_="level-color-owner"),
-                    "senioradmin": entry.find('a', class_="level-color-senioradmin"),
-                    "admin": entry.find('a', class_="level-color-administrator"),
-                    "trusted": entry.find('a', class_="level-color-trusted"),
-                    "user": entry.find('a', class_="level-color-user"),
-                    "flagged": entry.find('a', class_="level-color-flagged"),
-                    "banned": entry.find('a', class_="level-color-banned")
-                }
-
-                present_roles = [role for role, tag in roles.items() if tag]
-
-                player_name = player_name_tag.get_text(strip=True) if player_name_tag else 'Unknown Player'
-                admin_name = admin_name_tag.get_text(strip=True) if admin_name_tag else 'Unknown Admin'
-
-                client_penalties.append({
-                    'player_name': player_name,
-                    'penalty': penalty.get_text(strip=True) if penalty else 'None',
-                    'reason': reason,
-                    'admin': admin,
-                    'penalty_time': penalty_time,
-                    'roles': present_roles 
-                })
-
-                if count and len(client_penalties) >= count:
-                    break
+                pass
 
             return client_penalties
                 
@@ -1384,7 +1345,7 @@ class AsyncIW4MWrapper:
             return chat
                             
 
-        async def find_player(self, name: str = "", xuid: str = "", count: int = 1, 
+        async def find_player(self, name: str = "", xuid: str = "", count: int = 100, 
                               offset: int = 0, direction: int = 0):
             if not name and not xuid:
                 return 
@@ -1404,27 +1365,6 @@ class AsyncIW4MWrapper:
                     
                     response_text = await response.text()
                     return response_text
-        
-        async def get_users(self):
-            users = []
-
-            async with aiohttp.ClientSession() as session:
-                async with session.get(
-                    f"{self.wrapper.base_url}/"
-                ) as response:
-
-                    response_text = await response.text()
-                    soup = bs(response_text, 'html.parser')
-
-                    links = soup.find_all('a', class_='text-light-dm text-dark-lm no-decoration text-truncate ml-5 mr-5')
-                    for link in links:
-                        colorcode = link.find('colorcode')
-                        if colorcode:
-                            player = colorcode.text
-                            href   = link.get('href')
-                            users.append((player, href))
-
-                    return users
 
         async def get_players(self):
             players = []
@@ -1445,6 +1385,7 @@ class AsyncIW4MWrapper:
                             players.append({
                                 'role': 'creator',
                                 'name': creator_colorcode.text.strip(),
+                                'xuid': creator.get('href').strip()[16:],
                                 'url': creator.get('href').strip()
                             })
 
@@ -1455,6 +1396,7 @@ class AsyncIW4MWrapper:
                             players.append({
                                 'role': 'owner',
                                 'name': owner_colorcode.text.strip(),
+                                'xuid': owner.get('href').strip()[16:],
                                 'url': owner.get('href').strip()
                             })
 
@@ -1465,6 +1407,7 @@ class AsyncIW4MWrapper:
                             players.append({
                                 'role': 'senior',
                                 'name': senior_colorcode.text.strip(),
+                                'xuid': senior.get('href').strip()[16:],
                                 'url': senior.get('href').strip()
                             })
 
@@ -1473,10 +1416,12 @@ class AsyncIW4MWrapper:
                         admin_colorcode = admin.find('colorcode')
                         if admin_colorcode:
                             players.append({
-                                'role': admin,
+                                'role': 'admin',
                                 'name': admin_colorcode.text.strip(),
+                                'xuid': admin.get('href').strip()[16:],
                                 'url': admin.get('href').strip()
                             })
+    
 
                     users = soup.find_all('a', class_='text-light-dm text-dark-lm no-decoration text-truncate ml-5 mr-5')
                     for user in users:
@@ -1485,9 +1430,10 @@ class AsyncIW4MWrapper:
                             players.append({
                                 'role': 'user',
                                 'name': colorcode.text.strip(),
+                                'xuid': user.get('href').strip()[16:],
                                 'url': user.get('href').strip()
                             })
-                    
+            
                     flagged = soup.find_all('a', class_="level-color-1 no-decoration text-truncate ml-5 mr-5")
                     for flag in flagged:
                         flagged_colorcode = flag.find('colorcode')
@@ -1495,10 +1441,23 @@ class AsyncIW4MWrapper:
                             players.append({
                                 'role': 'flagged',
                                 'name': flagged_colorcode.text.strip(),
-                                'url': user.get('href').strip()
+                                'xuid': flag.get('href').strip()[16:],
+                                'url': flag.get('href').strip()
+                            })
+
+                    banned = soup.find_all('a', class_="level-color--1 no-decoration text-truncate ml-5 mr-5")
+                    for ban in banned:
+                        banned_colorcode = ban.find('colorcode')
+                        if banned_colorcode:
+                            players.append({
+                                'role': 'banned',
+                                'name': banned_colorcode.text.strip(),
+                                'xuid': ban.get('href').strip()[16:],
+                                'url': ban.get('href').strip()
                             })
 
                     return players
+
 
         async def get_roles(self):
             roles = []
