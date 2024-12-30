@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup as bs
 from requests import sessions
 import aiohttp
 import re
+from urllib.parse import quote
 
 class IW4MWrapper:
     def __init__(self, base_url: str, server_id: int, cookie: str):
@@ -234,7 +235,10 @@ class IW4MWrapper:
 
         def send_command(self, command: str): 
             try:
-                response = self.wrapper.session.get(f"{self.wrapper.base_url}/Console/Execute?serverId={self.wrapper.server_id}&command={command}")
+                encoded_command = quote(command)
+                response = self.wrapper.session.get(
+                    f"{self.wrapper.base_url}/Console/Execute?serverId={self.wrapper.server_id}&command={encoded_command}"
+                )
                 return response.text
             
             except Exception as e:
@@ -1304,10 +1308,11 @@ class AsyncIW4MWrapper:
                     return server_ids
 
         async def send_command(self, command: str):
+            encoded_command = quote(command)
             async with aiohttp.ClientSession() as session:
                 try:
                     async with session.get(
-                        f"{self.wrapper.base_url}/Console/Execute?serverId={self.wrapper.server_id}&command={command}",
+                        f"{self.wrapper.base_url}/Console/Execute?serverId={self.wrapper.server_id}&command={encoded_command}",
                         headers={"Cookie": self.wrapper.cookie}
                     ) as response:
                         return await response.text()
