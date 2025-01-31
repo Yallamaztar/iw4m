@@ -77,7 +77,7 @@ print(commands.privatemessage("[BSTR]FuRioSa_", "Bubi betta"))
 
 # Explore More
 
-**You can find additional example usages in the ``examples/`` directory**
+**You can find additional example usages in the [examples/](https://github.com/Yallamaztar/iw4m/tree/master/examples) directory**
 
 **For further information, check out the [official wiki (coming soon...)]()**
 
