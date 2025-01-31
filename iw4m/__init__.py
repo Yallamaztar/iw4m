@@ -1,9 +1,10 @@
 
 from bs4 import BeautifulSoup as bs
+from urllib.parse import quote
 from requests import sessions
 import aiohttp
 import re
-from urllib.parse import quote
+import json
 
 class IW4MWrapper:
     def __init__(self, base_url: str, server_id: int, cookie: str):
@@ -11,6 +12,60 @@ class IW4MWrapper:
         self.server_id = server_id
         self.session = sessions.Session()
         self.session.headers.update({ "Cookie": cookie })
+
+    class Utils:
+        def __init__(self, wrapper):
+            self.wrapper = wrapper
+        
+        def does_role_exists(self, role: str):
+            return role in self.wrapper.Server(self.wrapper).get_roles()
+        
+        def get_role_position(self, role: str):
+            roles = self.wrapper.Server(self.wrapper).get_roles()
+            return roles.index(role) if role in roles else -1
+
+        def is_higher_role(self, role: str, role_to_check: str):
+            roles = self.wrapper.Server(self.wrapper).get_roles()
+            if role not in roles or role_to_check not in roles:
+                return
+            
+            role_pos = roles.index(role)
+            role_to_check_pos = roles.index(role_to_check)
+            
+            return role_pos < role_to_check_pos
+
+        def is_lower_role(self, role: str, role_to_check: str):
+            return not self.is_higher_role(role, role_to_check)
+        
+        def get_command_prefix(self):
+            return self.wrapper.Server(self.wrapper).get_audit_logs()[0]['data'][0]
+
+        def is_player_online(self, player_name: str):
+            players = self.wrapper.Server(self.wrapper).get_players()
+            return any(player['name'] == player_name for player in players)
+
+        def get_player_count(self):
+            return len(self.wrapper.Server(self.wrapper).get_players())
+        
+        def is_server_full(self):
+            server_info = self.wrapper.Server(self.wrapper).info()
+            return server_info['totalConnectedClients'] >= server_info['totalClientSlots']
+
+        def get_online_players_by_role(self, role: str):
+            players = []
+
+            _players = self.wrapper.Server(self.wrapper).get_players()
+            for player in _players:
+                if player['role'].lower() == role.lower():
+                    players.append(player)
+            
+            return players
+        
+        def find_admin(self, admin_name: str):
+            admins = self.wrapper.Server(self.wrapper).get_admins()
+            for admin in admins:
+                if admin['name'].lower() == admin_name.lower():
+                    return admin
 
     class Server:
         def __init__(self, wrapper):
@@ -149,7 +204,25 @@ class IW4MWrapper:
                         }
 
             return _help
-                    
+            
+        def get_map_name(self): 
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/").text
+            soup = bs(response, 'html.parser')
+
+            map_div = soup.find('div', class_='col-12 align-self-center text-center text-lg-left col-lg-4')
+            if map_div:
+                spans = map_div.find_all('span')
+                return spans[0].text
+
+        def get_gamemode(self):
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/").text
+            soup = bs(response, 'html.parser')
+
+            map_div = soup.find('div', class_='col-12 align-self-center text-center text-lg-left col-lg-4')
+            if map_div:
+                spans = map_div.find_all('span')
+                return spans[2].text
+
         def get_iw4m_version(self): 
             response = self.wrapper.session.get(f"{self.wrapper.base_url}/").text
             soup = bs(response, 'html.parser')
@@ -183,7 +256,7 @@ class IW4MWrapper:
                         rules.append(div.text.strip())
 
             return rules
-
+            
         def get_reports(self):
             reports = []
 
@@ -372,11 +445,11 @@ class IW4MWrapper:
                     })
 
             return players
-        
+
         def get_roles(self):
             roles = []
 
-            response = self.wrapper.session.get(f'{self.wrapper.base_url}/Action/editForm/?id=982&meta=""').text
+            response = self.wrapper.session.get(f'{self.wrapper.base_url}/Action/editForm/?id=2&meta=""').text
             soup = bs(response, 'html.parser')
 
             select = soup.find('select', {'name': 'level'})
@@ -386,8 +459,25 @@ class IW4MWrapper:
                     role = option.get('value')
                     if role: 
                         roles.append(role)
+            
             return roles
         
+        def get_role_names(self):
+            roles = []
+
+            response = self.wrapper.session.get(f'{self.wrapper.base_url}/Action/editForm/?id=2&meta=""').text
+            soup = bs(response, 'html.parser')
+
+            select = soup.find('select')
+            if select:
+                options = select.find_all('option')
+                for option in options:
+                    colorcode = option.find('colorcode').text
+                    roles.append(colorcode)
+
+
+            return roles
+
         def recent_clients(self, offset: int = 0):
             recent_clients = []
 
@@ -437,6 +527,7 @@ class IW4MWrapper:
                 audit_log = {
                     'type': columns[0].text.strip(),
                     'origin': columns[1].find('a').text.strip(),
+                    'origin_rank': self.wrapper.Player(self.wrapper).player_rank_from_name(columns[1].find('a').text.strip()),
                     'href': columns[1].find('a').get('href').strip(),
                     'target': columns[2].find('a').text.strip() if columns[2].find('a') else columns[2].text.strip(),
                     'data': columns[4].text.strip(),
@@ -452,6 +543,7 @@ class IW4MWrapper:
         #    do fix this    #
         # ───────────────── # 
         def get_client_penalties(self, penalty_type: int = 7, hide_automated_penalties: bool = False, count: int = None):
+            """" Doesnt work gg """
             client_penalties = []   
             response = self.wrapper.session.get(f"{self.wrapper.base_url}/Penalty/List?showOnly={penalty_type}&hideAutomatedPenalties={hide_automated_penalties}")
             soup = bs(response.text, 'html.parser')
@@ -459,7 +551,6 @@ class IW4MWrapper:
             entries = soup.find_all('tr', class_='d-none d-lg-table-row')
             for entry in entries:
                 pass
-
             return client_penalties
                 
         def get_admins(self, role: str = "all", count: int = None):
@@ -621,6 +712,28 @@ class IW4MWrapper:
         
         def client_info(self, client_id: str):
             return self.wrapper.session.get(f"{self.wrapper.base_url}/api/client/{client_id}").json()
+        
+        def player_rank_from_name(self, player_name: str):
+            client_id = self.player_client_id_from_name(player_name)
+            return self.client_info(client_id)['level']
+
+        def player_xuid_from_name(self, player_name: str): 
+            found_player = self.wrapper.Server(self.wrapper).find_player(name=player_name)
+            player = json.loads(found_player)
+            return player.get('clients')[0]['xuid']
+
+        def player_name_from_xuid(self, xuid: str): 
+            found_player = self.wrapper.Server(self.wrapper).find_player(xuid=xuid)
+            player = json.loads(found_player)
+            return player.get('clients')[0]['name']
+
+        def player_name_from_client_id(self, client_id: str):
+            return self.info(client_id)['name']
+        
+        def player_client_id_from_name(self, player_name: str):
+            found_player = self.wrapper.Server(self.wrapper).find_player(name=player_name)
+            player = json.loads(found_player)
+            return player.get('clients')[0]['clientId']
 
         def info(self, client_id: str):
             info = {}
@@ -633,9 +746,9 @@ class IW4MWrapper:
             if name:
                 info['name'] = name.find('colorcode').text
 
-            guid = soup.find('div', class_='text-muted', id='altGuidFormatsDropdown')
-            if guid:
-                info['guid'] = guid.text
+            xuid = soup.find('div', class_='text-muted', id='altGuidFormatsDropdown')
+            if xuid:
+                info['xuid'] = xuid.text
 
             note = soup.find('div', class_="align-self-center font-size-12 font-weight-light pl-10 pr-10")
             if note:
@@ -973,9 +1086,12 @@ class IW4MWrapper:
         def rules(self):
             return self.game_utils.send_command("!rules")
         
-        def ping(self):
-            return self.game_utils.send_command("!ping")
-        
+        def ping(self, player: str = None):
+            if not player:
+                return self.game_utils.send_command("!ping")
+            else:
+                return self.game_utils.send_command(f"!ping {player}")
+
         def setgravatar(self, email):
             return self.game_utils.send_command(f"!setgravatar {email}")
         
@@ -1081,7 +1197,28 @@ class AsyncIW4MWrapper:
         self.base_url = base_url
         self.server_id = server_id
         self.cookie = cookie
-        
+     
+    class Utils:
+        def __init__(self, wrapper):
+            self.wrapper = wrapper
+
+        async def is_higer_role(self, role: str, role_to_check: str):
+            roles = await self.wrapper.Server(self.wrapper).get_roles()
+            if role not in roles or role_to_check not in roles:
+                return
+
+            role_pos = roles.index(role)
+            role_to_check_pos = roles.index(role_to_check)
+
+            return role_pos < role_to_check_pos
+
+        async def is_player_online(self, player_name: str):
+            players = await self.wrapper.Server(self.wrapper).get_players()
+            return any(player['name'] == player_name for player in players)
+            
+        async def get_player_count(self):
+            return len(await self.wrapper.Server(self.wrapper).get_players())
+
     class Server:
         def __init__(self, wrapper):
             self.wrapper = wrapper
@@ -1230,6 +1367,38 @@ class AsyncIW4MWrapper:
                                 }
 
             return _help
+
+        async def get_map_name(self):
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    f"{self.wrapper.base_url}/",
+                    headers={"Cookie": self.wrapper.cookie}
+                ) as response:
+
+                    text = await response.text()
+                    soup = bs(text, 'html.parser')
+
+                    map_div = soup.find('div', class_='col-12 align-self-center text-center text-lg-left col-lg-4')
+                    if map_div:
+                        map_name = map_div.find('span')
+                        if map_name:
+                            return map_name.text.strip() 
+        
+        async def get_gamemode(self):
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    f"{self.wrapper.base_url}",
+                    headers={'Cookie': self.wrapper.cookie}
+                ) as response:
+
+                    text = await response.text()
+                    soup = bs(text, 'html.parser')
+
+                    map_div = soup.find('div', class_='col-12 align-self-center text-center text-lg-left col-lg-4')
+                    if map_div:
+                        spans = map_div.find_all('span')
+                        if len(spans) > 2:
+                            return spans[2].text.strip() 
 
         async def get_iw4m_version(self):
             async with aiohttp.ClientSession() as session:
@@ -1540,6 +1709,7 @@ class AsyncIW4MWrapper:
                             audit_log = {
                                 'type': columns[0].text.strip(),
                                 'origin': columns[1].find('a').text.strip(),
+                                'origin_rank': self.wrapper.Player(self.wrapper).player_rank_from_name(columns[1].find('a').text.strip()),
                                 'href': columns[1].find('a').get('href').strip(),
                                 'target': columns[2].find('a').text.strip() if columns[2].find('a') else columns[2].text.strip(),
                                 'data': columns[4].text.strip(),
@@ -1850,6 +2020,28 @@ class AsyncIW4MWrapper:
                     info['stats'] = stats
 
             return info
+
+        async def player_rank_from_name(self, player_name: str):
+            client_id = await self.player_client_id_from_name(player_name)
+            return self.client_info(client_id)['level']
+
+        async def player_xuid_from_name(self, player_name: str):
+            found_player = await self.wrapper.Server(self.wrapper).find_player(name=player_name)
+            player = json.loads(found_player)
+            return player.get('clients')[0]['xuid']
+
+        async def player_name_from_xuid(self, xuid: str):
+            found_player = self.wrapper.Server(self.wrapper).find_player(xuid=xuid)
+            player = json.loads(found_player)
+            return player.get('clients')[0]['name']
+
+        async def player_name_from_client_id(self, client_id: str):
+            return await self.info(client_id)['name']
+
+        async def player_client_id_from_name(self, player_name: str):
+            found_player = await self.wrapper.Server(self.wrapper).find_player(name=player_name)
+            player = json.loads(found_player)
+            return player.get('clients')[0]['clientId']
         
         async def chat_history(self, client_id: str, count: int):
             messages = []
