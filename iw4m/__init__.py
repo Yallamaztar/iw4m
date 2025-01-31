@@ -446,7 +446,7 @@ class IW4MWrapper:
 
             return players
 
-        def get_roles(self):
+        def get_stock_roles(self):
             roles = []
 
             response = self.wrapper.session.get(f'{self.wrapper.base_url}/Action/editForm/?id=2&meta=""').text
@@ -462,7 +462,7 @@ class IW4MWrapper:
             
             return roles
         
-        def get_role_names(self):
+        def get_roles(self):
             roles = []
 
             response = self.wrapper.session.get(f'{self.wrapper.base_url}/Action/editForm/?id=2&meta=""').text
@@ -1201,8 +1201,15 @@ class AsyncIW4MWrapper:
     class Utils:
         def __init__(self, wrapper):
             self.wrapper = wrapper
+        
+        async def does_role_exists(self, role: str):
+            return role in await self.wrapper.Server(self.wrapper).get_roles()
 
-        async def is_higer_role(self, role: str, role_to_check: str):
+        async def get_role_position(self, role: str):
+            roles = await self.wrapper.Server(self.wrapper).get_roles()
+            return roles.index(role) if role in roles else -1
+
+        async def is_higher_role(self, role: str, role_to_check: str):
             roles = await self.wrapper.Server(self.wrapper).get_roles()
             if role not in roles or role_to_check not in roles:
                 return
@@ -1210,7 +1217,13 @@ class AsyncIW4MWrapper:
             role_pos = roles.index(role)
             role_to_check_pos = roles.index(role_to_check)
 
-            return role_pos < role_to_check_pos
+            return role_pos < role_to_check_pos 
+
+        async def is_lower_role(self, role: str, role_to_check: str):
+            return not await self.is_higher_role(role, role_to_check)
+
+        async def get_command_prefix(self):
+            return await self.wrapper.Server(self.wrapper).get_audit_logs()[0]['data'][0]
 
         async def is_player_online(self, player_name: str):
             players = await self.wrapper.Server(self.wrapper).get_players()
@@ -1218,6 +1231,26 @@ class AsyncIW4MWrapper:
             
         async def get_player_count(self):
             return len(await self.wrapper.Server(self.wrapper).get_players())
+
+        async def is_server_full(self):
+            server_info = await self.wrapper.Server(self.wrapper).info()
+            return server_info['totalConnectedClients'] >= server_info['totalClientSlots']
+        
+        async def get_online_players_by_role(self, role: str):
+            players = []
+
+            _players = self.wrapper.Server(self.wrapper).get_players()
+            for player in _players:
+                if player['role'].lower() == role.lower():
+                    players.append(player)
+
+            return players
+
+        async def find_admin(self, admin_name: str):
+            admins = self.wrapper.Server(self.wrapper).get_admins()
+            for admin in admins:
+                if admin['name'].lower() == admin_name.lower():
+                    return admin
 
     class Server:
         def __init__(self, wrapper):
@@ -1453,6 +1486,44 @@ class AsyncIW4MWrapper:
 
             return rules
 
+        async def get_reports(self):
+            reports = []
+
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    f"{self.base_url}/Action/RecentReportsForm/",
+                    headers={"Cookie": self.wrapper.cookie}
+                ) as response:
+
+                    text = await response.text()
+                    soup = bs(text, 'html.parser')
+
+                    report_blocks = soup.find_all('div', class_='rounded bg-very-dark-dm bg-light-ex-lm mt-10 mb-10 p-10')
+                    for block in report_blocks:
+                        timestamp_tag = block.find('div', class_='font-weight-bold')
+                        timestamp = timestamp_tag.text.strip()
+
+
+                    entries = soup.find_all('div', class_="font-size-12")
+                    for entry in entries:
+                        origin_tag = entry.find('a')
+                        origin = origin_tag.text.strip()
+
+                        reason_tag = entry.find('span', class_='text-white-dm text-black-lm').find('colorcode')
+                        reason = reason_tag.text.strip()
+
+                        target_tag = entry.find('span', class_='text-highlight').find('a')
+                        target = target_tag.text.strip()
+
+                        reports.append({
+                            'origin': origin,
+                            'reason': reason,
+                            'target': target,
+                            'timestamp': timestamp
+                        })
+
+            return reports
+                    
         async def get_server_ids(self): 
             server_ids = []
 
@@ -1633,7 +1704,7 @@ class AsyncIW4MWrapper:
                     return players
 
 
-        async def get_roles(self):
+        async def get_stock_roles(self):
             roles = []
 
             async with aiohttp.ClientSession() as session:
@@ -1654,6 +1725,27 @@ class AsyncIW4MWrapper:
                                 roles.append(role)
             return roles
         
+        async def get_roles(self):
+            roles = []
+
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    f'{self.wrapper.base_url}/Action/editForm/?id=2&meta=""',
+                    headers={"Cookie": self.wrapper.cookie}
+                ) as response:
+
+                    response_text = await response.text()
+                    soup = bs(response_text, 'html.parser')
+
+                    select = soup.find('select')
+                    if select:
+                        options = select.find_all('option')
+                        for option in options:
+                            colorcode = option.find('colorcode').text
+                            roles.append(colorcode)
+
+            return roles 
+
         async def recent_clients(self, offset: int = 0):
             recent_clients = []
 
