@@ -26,15 +26,19 @@ class TopStatAnnouncerPlugin:
     def get_server_name(self):
         return self.server.status()[0]['name']
 
-    def start(self):
+    def start(self, i=1):
         while True:
-            self.commands.say(f"^5[^7 Top Players On {self.get_server_name()} ^5]")
+            self.commands.say(f"^7[ ^3Top ^7Players On ^5{self.get_server_name()} ^7]")
             players = self.get_top_five_players()
             for player in players:
-                self.commands.say(f"^5[^7#1^5]^7: {player['name']} - Kills: {player['stats']['total kills']} Deaths: {player['stats']['total deaths']} | KDR: {player['stats']['kills per death']}")
+                self.commands.say(
+                    f"^7[^5#{i}^7]: {player['name']} - ^5Kills^7: {player['stats']['total kills']} | ^5KDR^7: {player['stats']['kills per death']}"
+                )
+                i += 1
                 time.sleep(0.15)
 
-            time.sleep(160)
+            time.sleep(15)
+            i = 1
 
 plugin = TopStatAnnouncerPlugin()
 plugin.start()
