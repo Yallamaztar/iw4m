@@ -510,21 +510,44 @@ class IW4MWrapper:
             
             return recent_clients
 
-        def get_audit_logs(self):
+        def get_recent_audit_log(self):
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/Admin/AuditLog").text
+            soup = bs(response, 'html.parser')
+
+            tbody = soup.select_one('#audit_log_table_body')
+            if not tbody:
+                return 
+            
+            tr = tbody.select_one('tr.d-none.d-lg-table-row.bg-dark-dm.bg-light-lm')
+            columns = tr.find_all('td')
+
+            audit_log = {
+                'type': columns[0].text.strip(),
+                'origin': columns[1].find('a').text.strip(),
+                'origin_rank': self.wrapper.Player(self.wrapper).player_rank_from_name(columns[1].find('a').text.strip()),
+                'href': columns[1].find('a').get('href').strip(),
+                'target': columns[2].find('a').text.strip() if columns[2].find('a') else columns[2].text.strip(),
+                'data': columns[4].text.strip(),
+                'time': columns[5].text.strip()
+            }
+
+            return audit_log
+
+        def get_audit_logs(self, count: int = 15):
             audit_logs = []
         
             response = self.wrapper.session.get(f"{self.wrapper.base_url}/Admin/AuditLog").text
             soup = bs(response, 'html.parser')
-        
-            tbody = soup.find('tbody', id='audit_log_table_body')
+
+            tbody = soup.select_one('#audit_log_table_body')
             if not tbody:
                 return audit_logs 
             
-            trs = tbody.find_all('tr', class_='d-none d-lg-table-row bg-dark-dm bg-light-lm')
-            for tr in trs:
+            trs = tbody.select('tr.d-none.d-lg-table-row.bg-dark-dm.bg-light-lm')
+            for tr in trs[:count]:
                 columns = tr.find_all('td')
 
-                audit_log = {
+                audit_logs.append({
                     'type': columns[0].text.strip(),
                     'origin': columns[1].find('a').text.strip(),
                     'origin_rank': self.wrapper.Player(self.wrapper).player_rank_from_name(columns[1].find('a').text.strip()),
@@ -532,9 +555,7 @@ class IW4MWrapper:
                     'target': columns[2].find('a').text.strip() if columns[2].find('a') else columns[2].text.strip(),
                     'data': columns[4].text.strip(),
                     'time': columns[5].text.strip()
-                }
-
-                audit_logs.append(audit_log)
+                })
             
             return audit_logs
         
@@ -560,10 +581,7 @@ class IW4MWrapper:
             soup = bs(response, 'html.parser')
 
             entries = soup.find_all('table', class_="table mb-20")
-            for entry in entries:
-                if count is not None and len(admins) >= count:
-                    break
-
+            for entry in entries[:count]:
                 header = entry.find('thead').find('tr').find_all('th')
                 _role = header[0].text.strip()
 
@@ -856,10 +874,7 @@ class IW4MWrapper:
             soup = bs(response, 'html.parser')
 
             entries = soup.find_all('div', class_='profile-meta-entry')
-            for entry in entries:
-                if len(administered_penalties) >= count:
-                    break
-
+            for entry in entries[:count]:
                 action_tag = entry.find('span', class_=re.compile(r'penalties-color'))
                 action = action_tag.text.strip() if action_tag else None
 
@@ -893,10 +908,7 @@ class IW4MWrapper:
             soup = bs(response, 'html.parser')
 
             entries = soup.find_all('div', class_='profile-meta-entry')
-            for entry in entries:
-                if len(received_penalties) >= count:
-                    break
-
+            for entry in entries[:count]:
                 action_tag = entry.find('span', class_=re.compile(r'penalties-color-'))
                 action = action_tag.text.strip() if action_tag else None
 
@@ -929,10 +941,7 @@ class IW4MWrapper:
             soup = bs(response, 'html.parser')
 
             entries = soup.find_all('div', class_='profile-meta-entry')
-            for entry in entries:
-                if len(connection_history) >= count:
-                        break
-
+            for entry in entries[:count]:
                 action_tag = entry.find('span', class_='text-secondary') or entry.find('span', class_='text-light-green')
                 action = action_tag.get_text(strip=True) if action_tag else None
 
@@ -961,10 +970,7 @@ class IW4MWrapper:
             soup = bs(response, 'html.parser')
         
             entries = soup.find_all('div', class_='profile-meta-entry')
-            for entry in entries:
-                if len(permissions) >= count:
-                    break
-            
+            for entry in entries[:count]:   
                 level_tag = entry.find('span', class_=re.compile(r'level-color-'))
                 level = level_tag.text.strip() if level_tag else 'Unknown'
 
@@ -1825,7 +1831,7 @@ class AsyncIW4MWrapper:
                     soup = bs(response_text, 'html.parser')
 
                     entries = soup.find_all('tr', class_='d-none d-lg-table-row')
-                    for entry in entries:
+                    for entry in entries[:count]:
                         player_name_tag = entry.find('a', class_='level-color-flagged')
                         admin_name_tag = entry.find('a', class_='level-color-administrator')
                         penalty = entry.find('td', class_='penalties-color-kick')
@@ -1846,7 +1852,6 @@ class AsyncIW4MWrapper:
                         present_roles = [role for role, tag in roles.items() if tag]
 
                         player_name = player_name_tag.get_text(strip=True) if player_name_tag else 'Unknown Player'
-                        admin_name = admin_name_tag.get_text(strip=True) if admin_name_tag else 'Unknown Admin'
 
                         client_penalties.append({
                             'player_name': player_name,
@@ -1856,9 +1861,6 @@ class AsyncIW4MWrapper:
                             'penalty_time': penalty_time,
                             'roles': present_roles 
                         })
-
-                        if count and len(client_penalties) >= count:
-                            break
 
                     return client_penalties
 
@@ -2192,10 +2194,7 @@ class AsyncIW4MWrapper:
                     soup = bs(response_text, 'html.parser')
 
                     entries = soup.find_all('div', class_='profile-meta-entry')
-                    for entry in entries:
-                        if len(administered_penalties) >= count:
-                            break
-
+                    for entry in entries[:count]:
                         action_tag = entry.find('span', class_=re.compile(r'penalties-color'))
                         action = action_tag.text.strip() if action_tag else None
 
@@ -2233,10 +2232,7 @@ class AsyncIW4MWrapper:
                     soup = bs(response_text, 'html.parser')
 
                     entries = soup.find_all('div', class_='profile-meta-entry')
-                    for entry in entries:
-                        if len(received_penalties) >= count:
-                            break
-
+                    for entry in entries[:count]:
                         action_tag = entry.find('span', class_=re.compile(r'penalties-color-'))
                         action = action_tag.text.strip() if action_tag else None
 
@@ -2274,10 +2270,7 @@ class AsyncIW4MWrapper:
                     soup = bs(response_text, 'html.parser')
 
                     entries = soup.find_all('div', class_='profile-meta-entry')
-                    for entry in entries:
-                        if len(connection_history) >= count:
-                            break
-
+                    for entry in entries[:count]:
                         action_tag = entry.find('span', class_='text-secondary') or entry.find('span', class_='text-light-green')
                         action = action_tag.get_text(strip=True) if action_tag else None
 
@@ -2310,10 +2303,7 @@ class AsyncIW4MWrapper:
                     soup = bs(response_text, 'html.parser')
 
                     entries = soup.find_all('div', class_='profile-meta-entry')
-                    for entry in entries:
-                        if len(permissions) >= count:
-                            break
-
+                    for entry in entries[:count]:
                         level_tag = entry.find('span', class_=re.compile(r'level-color-'))
                         level = level_tag.text.strip() if level_tag else 'Unknown'
 
