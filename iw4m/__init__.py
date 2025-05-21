@@ -409,7 +409,17 @@ class IW4MWrapper:
                         'xuid': admin.get('href').strip()[16:],
                         'url': admin.get('href').strip()
                     })
-    
+
+            trusted = soup.find_all('a', class_='level-color-2 no-decoration text-truncate ml-5 mr-5')
+            for trust in trusted:
+                trusted_colorcode = trust.find('colorcode')
+                if trusted_colorcode:
+                    players.append({
+                        'role': 'trusted',
+                        'name': trusted_colorcode.text.strip(),
+                        'xuid': trust.get('href').strip()[16:],
+                        'url': trust.get('href').strip()
+                    }) 
 
             users = soup.find_all('a', class_='text-light-dm text-dark-lm no-decoration text-truncate ml-5 mr-5')
             for user in users:
@@ -1672,7 +1682,17 @@ class AsyncIW4MWrapper:
                                 'xuid': admin.get('href').strip()[16:],
                                 'url': admin.get('href').strip()
                             })
-    
+
+                    trusted = soup.find_all('a', class_='level-color-2 no-decoration text-truncate ml-5 mr-5')
+                    for trust in trusted:
+                        trusted_colorcode = trust.find('colorcode')
+                        if trusted_colorcode:
+                            players.append({
+                                'role': 'trusted',
+                                'name': trusted_colorcode.text.strip(),
+                                'xuid': trust.get('href').strip()[16:],
+                                'url': trust.get('href').strip()
+                            }) 
 
                     users = soup.find_all('a', class_='text-light-dm text-dark-lm no-decoration text-truncate ml-5 mr-5')
                     for user in users:
