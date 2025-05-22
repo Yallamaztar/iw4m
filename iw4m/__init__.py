@@ -1223,58 +1223,58 @@ class AsyncIW4MWrapper:
         self.cookie = cookie
      
         class Utils:
-        def __init__(self, wrapper):
-            self.wrapper = wrapper
+            def __init__(self, wrapper):
+                self.wrapper = wrapper
         
-        async def does_role_exists(self, role: str):
-            return role in await self.wrapper.Server(self.wrapper).get_roles()
+            async def does_role_exists(self, role: str):
+                return role in await self.wrapper.Server(self.wrapper).get_roles()
 
-        async def get_role_position(self, role: str):
-            roles = await self.wrapper.Server(self.wrapper).get_roles()
-            return roles.index(role) if role in roles else -1
+            async def get_role_position(self, role: str):
+                roles = await self.wrapper.Server(self.wrapper).get_roles()
+                return roles.index(role) if role in roles else -1
 
-        async def is_higher_role(self, role: str, role_to_check: str):
-            roles = await self.wrapper.Server(self.wrapper).get_roles()
-            if role not in roles or role_to_check not in roles:
-                return
+            async def is_higher_role(self, role: str, role_to_check: str):
+                roles = await self.wrapper.Server(self.wrapper).get_roles()
+                if role not in roles or role_to_check not in roles:
+                    return
 
-            role_pos = roles.index(role)
-            role_to_check_pos = roles.index(role_to_check)
+                role_pos = roles.index(role)
+                role_to_check_pos = roles.index(role_to_check)
 
-            return role_pos < role_to_check_pos 
+                return role_pos < role_to_check_pos 
 
-        async def is_lower_role(self, role: str, role_to_check: str):
-            return not await self.is_higher_role(role, role_to_check)
+            async def is_lower_role(self, role: str, role_to_check: str):
+                return not await self.is_higher_role(role, role_to_check)
 
-        async def get_command_prefix(self):
-            return await self.wrapper.Server(self.wrapper).get_audit_logs()[0]['data'][0]
+            async def get_command_prefix(self):
+                return await self.wrapper.Server(self.wrapper).get_audit_logs()[0]['data'][0]
 
-        async def is_player_online(self, player_name: str):
-            players = await self.wrapper.Server(self.wrapper).get_players()
-            return any(player['name'] == player_name for player in players)
+            async def is_player_online(self, player_name: str):
+                players = await self.wrapper.Server(self.wrapper).get_players()
+                return any(player['name'] == player_name for player in players)
             
-        async def get_player_count(self):
-            return len(await self.wrapper.Server(self.wrapper).get_players())
+            async def get_player_count(self):
+                return len(await self.wrapper.Server(self.wrapper).get_players())
 
-        async def is_server_full(self):
-            server_info = await self.wrapper.Server(self.wrapper).info()
-            return server_info['totalConnectedClients'] >= server_info['totalClientSlots']
-        
-        async def get_online_players_by_role(self, role: str):
-            players = []
+            async def is_server_full(self):
+                server_info = await self.wrapper.Server(self.wrapper).info()
+                return server_info['totalConnectedClients'] >= server_info['totalClientSlots']
 
-            _players = self.wrapper.Server(self.wrapper).get_players()
-            for player in _players:
-                if player['role'].lower() == role.lower():
-                    players.append(player)
+            async def get_online_players_by_role(self, role: str):
+                players = []
 
-            return players
+                _players = self.wrapper.Server(self.wrapper).get_players()
+                for player in _players:
+                    if player['role'].lower() == role.lower():
+                        players.append(player)
 
-        async def find_admin(self, admin_name: str):
-            admins = self.wrapper.Server(self.wrapper).get_admins()
-            for admin in admins:
-                if admin['name'].lower() == admin_name.lower():
-                    return admin
+                return players
+
+            async def find_admin(self, admin_name: str):
+                admins = self.wrapper.Server(self.wrapper).get_admins()
+                for admin in admins:
+                    if admin['name'].lower() == admin_name.lower():
+                        return admin
 
     class Server:
         def __init__(self, wrapper):
