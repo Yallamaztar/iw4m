@@ -700,7 +700,7 @@ class IW4MWrapper:
                         hit_tbody = location.find('tbody')
                         if hit_tbody:
 
-                            advanced_stats[hit_title] = [] 
+                            advanced_stats[hit_title] = []
 
                             hit_table_rows = hit_tbody.find_all('tr', class_="bg-dark-dm bg-light-lm d-none d-lg-table-row")
                             for hit_row in hit_table_rows:
@@ -762,6 +762,14 @@ class IW4MWrapper:
             found_player = self.wrapper.Server(self.wrapper).find_player(name=player_name)
             player = json.loads(found_player)
             return player.get('clients')[0]['clientId']
+        
+        def find_player_by_partial_name(self, player_name: str):
+            player_name  = player_name.lower()
+            players = self.wrapper.Server(self.wrapper).get_players()
+
+            for player in players:
+                if player_name in player['name'].lower():
+                    return player['name']
 
         def info(self, client_id: str):
             info = {}
@@ -1214,7 +1222,7 @@ class AsyncIW4MWrapper:
         self.server_id = server_id
         self.cookie = cookie
      
-    class Utils:
+        class Utils:
         def __init__(self, wrapper):
             self.wrapper = wrapper
         
@@ -2156,7 +2164,15 @@ class AsyncIW4MWrapper:
             found_player = await self.wrapper.Server(self.wrapper).find_player(name=player_name)
             player = json.loads(found_player)
             return player.get('clients')[0]['clientId']
-        
+
+        async def find_player_by_partial_name(self, player_name: str):
+            player_name  = player_name.lower()
+            players = await self.wrapper.Server(self.wrapper).get_players()
+
+            for player in players:
+                if player_name in player['name'].lower():
+                    return player['name']
+
         async def chat_history(self, client_id: str, count: int):
             messages = []
             async with aiohttp.ClientSession() as session:
