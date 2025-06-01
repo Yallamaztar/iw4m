@@ -8,7 +8,7 @@ import json
 
 class IW4MWrapper:
     def __init__(self, base_url: str, server_id: int, cookie: str):
-        self.base_url = base_url 
+        self.base_url = base_url
         self.server_id = server_id
         self.session = sessions.Session()
         self.session.headers.update({ "Cookie": cookie })
@@ -365,8 +365,11 @@ class IW4MWrapper:
             
             response = self.wrapper.session.get(f"{self.wrapper.base_url}/").text
             soup = bs(response, 'html.parser')
-            
-            creators = soup.find_all('a', class_='level-color-6 no-decoration text-truncate ml-5 mr-5')
+            # <a class="level-color-7 no-decoration text-truncate ml-5 mr-5" href="/Client/Profile/5">
+            #                 <colorcode>SsugonmaA</colorcode>
+            #             </a>
+            #         </div>
+            creators = soup.find_all('a', class_='level-color-7 no-decoration text-truncate ml-5 mr-5')
             for creator in creators:
                 creator_colorcode = creator.find('colorcode')
                 if creator_colorcode:
@@ -377,7 +380,7 @@ class IW4MWrapper:
                         'url': creator.get('href').strip()
                     })
 
-            owners = soup.find_all('a', class_='level-color-5 no-decoration text-truncate ml-5 mr-5')
+            owners = soup.find_all('a', class_='level-color-6 no-decoration text-truncate ml-5 mr-5')
             for owner in owners:
                 owner_colorcode = owner.find('colorcode')
                 if owner_colorcode:
@@ -388,7 +391,7 @@ class IW4MWrapper:
                         'url': owner.get('href').strip()
                     })
 
-            seniors = soup.find_all('a', class_='level-color-4 no-decoration text-truncate ml-5 mr-5')
+            seniors = soup.find_all('a', class_='level-color-5 no-decoration text-truncate ml-5 mr-5')
             for senior in seniors:
                 senior_colorcode = senior.find('colorcode')
                 if senior_colorcode:
@@ -399,7 +402,7 @@ class IW4MWrapper:
                         'url': senior.get('href').strip()
                     })
 
-            admins = soup.find_all('a', class_='level-color-3 no-decoration text-truncate ml-5 mr-5')
+            admins = soup.find_all('a', class_='level-color-4 no-decoration text-truncate ml-5 mr-5')
             for admin in admins:
                 admin_colorcode = admin.find('colorcode')
                 if admin_colorcode:
@@ -409,6 +412,17 @@ class IW4MWrapper:
                         'xuid': admin.get('href').strip()[16:],
                         'url': admin.get('href').strip()
                     })
+
+            # trusted = soup.find_all('a', class_='level-color-3 no-decoration text-truncate ml-5 mr-5')
+            # for trust in trusted:
+            #     trust_colorcode = trust.find('colorcode')
+            #     if trust_colorcode:
+            #         players.append({
+            #             'role': 'trust',
+            #             'name': trust_colorcode.text.strip(),
+            #             'xuid': trust.get('href').strip()[16:],
+            #             'url': trust.get('href').strip()
+            #         })
 
             trusted = soup.find_all('a', class_='level-color-2 no-decoration text-truncate ml-5 mr-5')
             for trust in trusted:
