@@ -390,7 +390,18 @@ class IW4MWrapper:
                         'url': owner.get('href').strip()
                     })
 
-            seniors = soup.find_all('a', class_='level-color-5 no-decoration text-truncate ml-5 mr-5')
+            moderators = soup.find_all('a', class_='level-color-5 no-decoration text-truncate ml-5 mr-5')
+            for moderator in moderators:
+                moderator_colorcode = moderator.find('colorcode')
+                if moderator_colorcode:
+                    players.append({
+                        'role': 'moderator',
+                        'name': moderator_colorcode.text.strip(),
+                        'xuid': moderator.get('href').strip()[16:],
+                        'url': moderator.get('href').strip()
+                    })
+
+            seniors = soup.find_all('a', class_='level-color-4 no-decoration text-truncate ml-5 mr-5')
             for senior in seniors:
                 senior_colorcode = senior.find('colorcode')
                 if senior_colorcode:
@@ -401,7 +412,7 @@ class IW4MWrapper:
                         'url': senior.get('href').strip()
                     })
 
-            admins = soup.find_all('a', class_='level-color-4 no-decoration text-truncate ml-5 mr-5')
+            admins = soup.find_all('a', class_='level-color-3 no-decoration text-truncate ml-5 mr-5')
             for admin in admins:
                 admin_colorcode = admin.find('colorcode')
                 if admin_colorcode:
@@ -411,17 +422,6 @@ class IW4MWrapper:
                         'xuid': admin.get('href').strip()[16:],
                         'url': admin.get('href').strip()
                     })
-
-            # trusted = soup.find_all('a', class_='level-color-3 no-decoration text-truncate ml-5 mr-5')
-            # for trust in trusted:
-            #     trust_colorcode = trust.find('colorcode')
-            #     if trust_colorcode:
-            #         players.append({
-            #             'role': 'trust',
-            #             'name': trust_colorcode.text.strip(),
-            #             'xuid': trust.get('href').strip()[16:],
-            #             'url': trust.get('href').strip()
-            #         })
 
             trusted = soup.find_all('a', class_='level-color-2 no-decoration text-truncate ml-5 mr-5')
             for trust in trusted:
@@ -1660,7 +1660,7 @@ class AsyncIW4MWrapper:
                     response_text = await response.text()
                     soup = bs(response_text, 'html.parser')
                     
-                    creators = soup.find_all('a', class_='level-color-6 no-decoration text-truncate ml-5 mr-5')
+                    creators = soup.find_all('a', class_='level-color-7 no-decoration text-truncate ml-5 mr-5')
                     for creator in creators:
                         creator_colorcode = creator.find('colorcode')
                         if creator_colorcode:
@@ -1671,7 +1671,7 @@ class AsyncIW4MWrapper:
                                 'url': creator.get('href').strip()
                             })
 
-                    owners = soup.find_all('a', class_='level-color-5 no-decoration text-truncate ml-5 mr-5')
+                    owners = soup.find_all('a', class_='level-color-6 no-decoration text-truncate ml-5 mr-5')
                     for owner in owners:
                         owner_colorcode = owner.find('colorcode')
                         if owner_colorcode:
@@ -1680,6 +1680,17 @@ class AsyncIW4MWrapper:
                                 'name': owner_colorcode.text.strip(),
                                 'xuid': owner.get('href').strip()[16:],
                                 'url': owner.get('href').strip()
+                            })
+
+                    moderators = soup.find_all('a', class_='level-color-5 no-decoration text-truncate ml-5 mr-5')
+                    for moderator in moderators:
+                        moderator_colorcode = moderator.find('colorcode')
+                        if moderator_colorcode:
+                            players.append({
+                                'role': 'moderator',
+                                'name': moderator_colorcode.text.strip(),
+                                'xuid': moderator.get('href').strip()[16:],
+                                'url': moderator.get('href').strip()
                             })
 
                     seniors = soup.find_all('a', class_='level-color-4 no-decoration text-truncate ml-5 mr-5')
