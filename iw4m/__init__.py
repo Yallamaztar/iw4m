@@ -315,8 +315,7 @@ class IW4MWrapper:
                 return response.text
             
             except Exception as e:
-                print(response.status_code())
-            return e, response.status_code
+                return e
         
         def read_chat(self):
             chat = []
