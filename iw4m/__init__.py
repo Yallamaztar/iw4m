@@ -1290,6 +1290,23 @@ class AsyncIW4MWrapper:
         def __init__(self, wrapper):
             self.wrapper = wrapper
         
+        async def get_server_uptime(self):
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    f"{self.wrapper.base_url}/Console/Execute?serverId=15253132414984&command=!uptime",
+                    headers={"Cookie": self.wrapper.cookie}
+                ) as response: 
+                    return await response.text()
+            return self.wrapper.session.get(f"{self.wrapper.base_url}")
+
+        async def generate_login_token(self):
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    f"{self.wrapper.base_url}/Action/GenerateLoginTokenAsync/",
+                    headers={"Cookie": self.wrapper.cookie}
+                ) as response: 
+                    return await response.text()
+                
         async def status(self):
             async with aiohttp.ClientSession() as session:
                 async with session.get(
@@ -1862,7 +1879,7 @@ class AsyncIW4MWrapper:
             audit_logs = []
 
             async with aiohttp.ClientSession() as session:
-                async with session.get(§
+                async with session.get(
                     f"{self.wrapper.base_url}/Admin/AuditLog",
                     headers={"Cookie": self.wrapper.cookie}
                     ) as response:
