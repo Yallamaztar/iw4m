@@ -364,10 +364,7 @@ class IW4MWrapper:
             
             response = self.wrapper.session.get(f"{self.wrapper.base_url}/").text
             soup = bs(response, 'html.parser')
-            # <a class="level-color-7 no-decoration text-truncate ml-5 mr-5" href="/Client/Profile/5">
-            #                 <colorcode>SsugonmaA</colorcode>
-            #             </a>
-            #         </div>
+
             creators = soup.find_all('a', class_='level-color-7 no-decoration text-truncate ml-5 mr-5')
             for creator in creators:
                 creator_colorcode = creator.find('colorcode')
@@ -795,9 +792,9 @@ class IW4MWrapper:
             if name:
                 info['name'] = name.find('colorcode').text
 
-            xuid = soup.find('div', class_='text-muted', id='altGuidFormatsDropdown')
-            if xuid:
-                info['xuid'] = xuid.text
+            guid = soup.find('div', class_='text-muted', id='altGuidFormatsDropdown')
+            if guid:
+                info['guid'] = guid.text
 
             note = soup.find('div', class_="align-self-center font-size-12 font-weight-light pl-10 pr-10")
             if note:
@@ -1276,7 +1273,7 @@ class AsyncIW4MWrapper:
             async def get_online_players_by_role(self, role: str):
                 players = []
 
-                _players = self.wrapper.Server(self.wrapper).get_players()
+                _players = await self.wrapper.Server(self.wrapper).get_players()
                 for player in _players:
                     if player['role'].lower() == role.lower():
                         players.append(player)
@@ -1284,7 +1281,7 @@ class AsyncIW4MWrapper:
                 return players
 
             async def find_admin(self, admin_name: str):
-                admins = self.wrapper.Server(self.wrapper).get_admins()
+                admins = await self.wrapper.Server(self.wrapper).get_admins()
                 for admin in admins:
                     if admin['name'].lower() == admin_name.lower():
                         return admin
@@ -1645,8 +1642,8 @@ class AsyncIW4MWrapper:
                     }
                 ) as response:
                     
-                    response_text = await response.text()
-                    return response_text
+                    res = await response.text()
+                    return res
 
         async def get_players(self):
             players = []
@@ -1657,8 +1654,8 @@ class AsyncIW4MWrapper:
                     headers={"Cookie": self.wrapper.cookie}
                 ) as response:
                     
-                    response_text = await response.text()
-                    soup = bs(response_text, 'html.parser')
+                    res = await response.text()
+                    soup = bs(res, 'html.parser')
                     
                     creators = soup.find_all('a', class_='level-color-7 no-decoration text-truncate ml-5 mr-5')
                     for creator in creators:
@@ -1771,8 +1768,8 @@ class AsyncIW4MWrapper:
                     headers={"Cookie": self.wrapper.cookie}
                 ) as response:
                     
-                    response_text = await response.text()
-                    soup = bs(response_text, 'html.parser')
+                    res = await response.text()
+                    soup = bs(res, 'html.parser')
 
                     select = soup.find('select', {'name': 'level'})
                     if select:
@@ -1792,8 +1789,8 @@ class AsyncIW4MWrapper:
                     headers={"Cookie": self.wrapper.cookie}
                 ) as response:
 
-                    response_text = await response.text()
-                    soup = bs(response_text, 'html.parser')
+                    res = await response.text()
+                    soup = bs(res, 'html.parser')
 
                     select = soup.find('select')
                     if select:
@@ -1810,8 +1807,7 @@ class AsyncIW4MWrapper:
             async with aiohttp.ClientSession() as session:
                 async with session.get(f"{self.wrapper.base_url}/Action/RecentClientsForm?offset={offset}&count=20",
                                        headers={"Cookie": self.wrapper.cookie}) as response:
-                    response_text = await response.text()
-                    soup = bs(response_text, 'html.parser')
+                    soup = bs(response, 'html.parser')
             
                     entries = soup.find_all('div', class_="bg-very-dark-dm bg-light-ex-lm p-15 rounded mb-10")
                     for entry in entries:
@@ -1836,17 +1832,43 @@ class AsyncIW4MWrapper:
                     
             return recent_clients
         
+        async def get_recent_audit_log(self):
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f"{self.wrapper.base_url}/Admin/AuditLog",
+                                       headers={"Cookie": self.wrapper.cookie}) as response:
+                    soup = bs(response, 'html.parser')
+
+                    tbody = soup.select_one('#audit_log_table_body')
+                    if not tbody:
+                        return 
+            
+                    tr = tbody.select_one('tr.d-none.d-lg-table-row.bg-dark-dm.bg-light-lm')
+                    columns = tr.find_all('td')
+
+                    audit_log = {
+                        'type': columns[0].text.strip(),
+                        'origin': columns[1].find('a').text.strip(),
+                        'origin_rank': self.wrapper.Player(self.wrapper).player_rank_from_name(columns[1].find('a').text.strip()),
+                        'href': columns[1].find('a').get('href').strip(),
+                        'target': columns[2].find('a').text.strip() if columns[2].find('a') else columns[2].text.strip(),
+                        'data': columns[4].text.strip(),
+                        'time': columns[5].text.strip()
+                    }
+
+                return audit_log
+
+        
         async def get_audit_logs(self):
             audit_logs = []
 
             async with aiohttp.ClientSession() as session:
-                async with session.get(
+                async with session.get(§
                     f"{self.wrapper.base_url}/Admin/AuditLog",
                     headers={"Cookie": self.wrapper.cookie}
                     ) as response:
 
-                        response_text = await response.text()
-                        soup = bs(response_text, 'html.parser')
+                        res = await response.text()
+                        soup = bs(res, 'html.parser')
 
                         tbody = soup.find('tbody', id='audit_log_table_body')
                         if not tbody:
@@ -1879,8 +1901,8 @@ class AsyncIW4MWrapper:
                     headers={"Cookie": self.wrapper.cookie}
                 ) as response:
 
-                    response_text = await response.text()
-                    soup = bs(response_text, 'html.parser')
+                    res = await response.text()
+                    soup = bs(res, 'html.parser')
 
                     entries = soup.find_all('tr', class_='d-none d-lg-table-row')
                     for entry in entries[:count]:
@@ -1925,8 +1947,8 @@ class AsyncIW4MWrapper:
                     headers={"Cookie": self.wrapper.cookie}
                 ) as response:
                     
-                    response_text = await response.text()
-                    soup = bs(response_text, 'html.parser')
+                    res = await response.text()
+                    soup = bs(res, 'html.parser')
 
                     entries = soup.find_all('table', class_="table mb-20")
                     for entry in entries:
@@ -1962,8 +1984,8 @@ class AsyncIW4MWrapper:
                     f"{self.wrapper.base_url}/Stats/GetTopPlayersAsync?offset=0&count={count}&serverId=0",
                     headers={"Cookie": self.wrapper.cookie}
                 ) as response:
-                    response_text = await response.text()
-                    soup = bs(response_text, 'html.parser')
+                    res = await response.text()
+                    soup = bs(res, 'html.parser')
 
                     entries = soup.find_all('div', class_="card m-0 mt-15 p-20 d-flex flex-column flex-md-row justify-content-between")
                     for entry in entries:
@@ -2004,8 +2026,8 @@ class AsyncIW4MWrapper:
                     f"{self.wrapper.base_url}/api/stats/{client_id}",
                     headers={"Cookie": self.wrapper.cookie}
                 ) as response:
-                    response_text = await response.text()
-                    return response_text
+                    res = await response.text()
+                    return res
         
         async def advanced_stats(self, client_id: str):
             advanced_stats = {}
@@ -2013,8 +2035,8 @@ class AsyncIW4MWrapper:
             async with aiohttp.ClientSession() as session:
                 async with session.get(f"{self.wrapper.base_url}/clientstatistics/{client_id}/advanced",
                                        headers={"Cookie": self.wrapper.cookie}) as response:
-                    response_text = await response.text()
-                    soup = bs(response_text, 'html.parser')
+                    res = await response.text()
+                    soup = bs(res, 'html.parser')
 
                     top_card = soup.find('div', class_="align-self-center d-flex flex-column flex-lg-row flex-fill mb-15")
                     if top_card:
@@ -2090,8 +2112,8 @@ class AsyncIW4MWrapper:
             info = {}
             async with aiohttp.ClientSession() as session:
                 async with session.get(f"{self.wrapper.base_url}/Client/Profile/{client_id}", headers={"Cookie": self.wrapper.cookie}) as response:
-                    response_text = await response.text()
-                    soup = bs(response_text, 'html.parser')
+                    res = await response.text()
+                    soup = bs(res, 'html.parser')
 
                     info['link'] = f"{self.wrapper.base_url}/Client/Profile/{client_id}"
 
@@ -2177,7 +2199,7 @@ class AsyncIW4MWrapper:
             return player.get('clients')[0]['xuid']
 
         async def player_name_from_xuid(self, xuid: str):
-            found_player = self.wrapper.Server(self.wrapper).find_player(xuid=xuid)
+            found_player = await self.wrapper.Server(self.wrapper).find_player(xuid=xuid)
             player = json.loads(found_player)
             return player.get('clients')[0]['name']
 
@@ -2205,8 +2227,8 @@ class AsyncIW4MWrapper:
                     headers={"Cookie": self.wrapper.cookie}
                 ) as response:
                     
-                    response_text = await response.text()
-                    soup = bs(response_text, 'html.parser')
+                    res = await response.text()
+                    soup = bs(res, 'html.parser')
 
                     entries = soup.find_all('div', class_='profile-meta-entry')
                     for entry in entries:
@@ -2224,8 +2246,8 @@ class AsyncIW4MWrapper:
                     headers={"Cookie": self.wrapper.cookie}
                 ) as response:
                     
-                    response_text = await response.text()
-                    soup = bs(response_text, 'html.parser')
+                    res = await response.text()
+                    soup = bs(res, 'html.parser')
 
                     entries = soup.find_all('div', class_='profile-meta-entry')
                     for entry in entries:
@@ -2250,8 +2272,8 @@ class AsyncIW4MWrapper:
                     f"{self.wrapper.base_url}/Client/Profile/{client_id}?metaFilterType=Penalized",
                     headers={"Cookie": self.wrapper.cookie}
                 ) as response:
-                    response_text = await response.text()
-                    soup = bs(response_text, 'html.parser')
+                    res = await response.text()
+                    soup = bs(res, 'html.parser')
 
                     entries = soup.find_all('div', class_='profile-meta-entry')
                     for entry in entries[:count]:
@@ -2288,8 +2310,8 @@ class AsyncIW4MWrapper:
                     f"{self.wrapper.base_url}/Client/Profile/{client_id}?metaFilterType=ReceivedPenalty",
                     headers={"Cookie": self.wrapper.cookie}
                 ) as response:
-                    response_text = await response.text()
-                    soup = bs(response_text, 'html.parser')
+                    res = await response.text()
+                    soup = bs(res, 'html.parser')
 
                     entries = soup.find_all('div', class_='profile-meta-entry')
                     for entry in entries[:count]:
@@ -2326,8 +2348,8 @@ class AsyncIW4MWrapper:
                     f"{self.wrapper.base_url}/Client/Profile/{client_id}?metaFilterType=ConnectionHistory",
                     headers={"Cookie": self.wrapper.cookie}
                 ) as response:
-                    response_text = await response.text()
-                    soup = bs(response_text, 'html.parser')
+                    res = await response.text()
+                    soup = bs(res, 'html.parser')
 
                     entries = soup.find_all('div', class_='profile-meta-entry')
                     for entry in entries[:count]:
@@ -2359,8 +2381,8 @@ class AsyncIW4MWrapper:
                     f"{self.wrapper.base_url}/Client/Profile/{client_id}?metaFilterType=PermissionLevel",
                     headers={"Cookie": self.wrapper.cookie}
                 ) as response:
-                    response_text = await response.text()
-                    soup = bs(response_text, 'html.parser')
+                    res = await response.text()
+                    soup = bs(res, 'html.parser')
 
                     entries = soup.find_all('div', class_='profile-meta-entry')
                     for entry in entries[:count]:
