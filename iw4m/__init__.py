@@ -7,7 +7,7 @@ import re
 import json
 
 class IW4MWrapper:
-    def __init__(self, base_url: str, server_id: int, cookie: str):
+    def __init__(self, base_url: str, server_id: str, cookie: str):
         self.base_url = base_url
         self.server_id = server_id
         self.session = sessions.Session()
@@ -748,6 +748,14 @@ class IW4MWrapper:
 
             return advanced_stats
         
+        def ban_reason(self, client_id: str):
+            response = self.wrapper.session.get(f"{self.wrapper.base_url}/Client/Profile/{client_id}").text
+            soup = bs(response, 'html.parser')
+
+            reason_div = soup.find("span", class_="text-light-dm font-weight-lighter")
+            if reason_div:
+                return reason_div.text
+
         def client_info(self, client_id: str):
             return self.wrapper.session.get(f"{self.wrapper.base_url}/api/client/{client_id}").json()
         
@@ -2118,6 +2126,16 @@ class AsyncIW4MWrapper:
                                         })
 
             return advanced_stats
+        
+        async def ban_reason(self, client_id: str):
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f"{self.wrapper.base_url}/api/client/{client_id}", headers={"Cookie": self.wrapper.cookie}) as response:
+                    soup = bs(response, 'html.parser')
+
+                    reason_div = soup.find("span", class_="text-light-dm font-weight-lighter")
+                    if reason_div:
+                        return reason_div.text
+
         
         async def client_info(self, client_id: str):
             async with aiohttp.ClientSession() as session:
