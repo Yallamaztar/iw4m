@@ -24,7 +24,7 @@ def run(command_name: str = "custom_command") -> None:
             time.sleep(0.5); continue
 
         if audit_log['data'].startswith(f"!{command_name}"):
-            custom_command_example(audit_log)
+            custom_command_example()
 
         last_seen.append((audit_log['origin'], audit_log['data'], audit_log['time']))
 
